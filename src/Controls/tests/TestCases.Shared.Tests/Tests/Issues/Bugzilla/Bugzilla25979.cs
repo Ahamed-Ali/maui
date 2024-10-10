@@ -18,7 +18,7 @@
 // 	{
 // 		App.WaitForElement("PageOneButtonId");
 // 		App.Screenshot("At page one");
-		
+
 // 		App.Tap("PageOneButtonId");
 // #if __MACOS__
 // 		System.Threading.Thread.Sleep(2000);
@@ -26,7 +26,7 @@
 
 // 		App.WaitForElement("PageTwoButtonId");
 // 		App.Screenshot("At page two - I didn't crash");
-		
+
 // 		App.Tap("PageTwoButtonId");
 // #if __MACOS__
 // 		System.Threading.Thread.Sleep(2000);
