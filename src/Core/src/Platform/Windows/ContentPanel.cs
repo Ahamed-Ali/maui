@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
 #if MAUI_GRAPHICS_WIN2D
@@ -162,7 +163,7 @@ namespace Microsoft.Maui.Platform
 			UpdateClip(strokeShape, width, height);
 		}
 
-		void UpdateClip(IShape? borderShape, double width, double height)
+		async void UpdateClip(IShape? borderShape, double width, double height)
 		{
 			if (Content is null)
 			{
@@ -182,6 +183,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
+
+			if (visual.Clip is not null)
+			{
+				visual.Clip = null;
+			}
 			var compositor = visual.Compositor;
 
 			PathF? clipPath;
@@ -208,7 +214,7 @@ namespace Microsoft.Maui.Platform
 
 			// The clip needs to consider the content's offset in case it is in a different position because of a different alignment.
 			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
-
+			await Task.Yield();
 			visual.Clip = geometricClip;
 		}
 	}
