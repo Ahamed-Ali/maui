@@ -4,8 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Issues.Issue18937">
 
-  <Border Stroke="yellow">
-    <StackLayout AutomationId="StackLayout" BackgroundColor="red" IsClippedToBounds="True"></StackLayout>
+  <Border>
+    <StackLayout BackgroundColor="red" 
+                 IsClippedToBounds="True">
+      <Label AutomationId="Label" Text="Label Inside the Border" VerticalOptions="Center"
+             HorizontalOptions="Center"/>
+    </StackLayout>
   </Border>
 
 </ContentPage>

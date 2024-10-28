@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Border)]
 		public void UnHandledExceptionShouldNotOccur()
 		{
-			App.WaitForElement("StackLayout");
+			App.WaitForElement("Label");
 			VerifyScreenshot();
 		}
 	}
