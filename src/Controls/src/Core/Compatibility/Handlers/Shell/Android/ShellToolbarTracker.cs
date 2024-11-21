@@ -319,6 +319,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_backButtonBehavior != null)
 					_backButtonBehavior.PropertyChanged += OnBackButtonBehaviorChanged;
 			}
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+				UpdateLeftBarButtonItem();
 			else if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
 				UpdateTitleView();
 		}
