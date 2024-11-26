@@ -1,6 +1,5 @@
 #nullable enable
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
 using WSize = global::Windows.Foundation.Size;
