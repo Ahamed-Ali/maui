@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 	public class ContentPanel : MauiPanel
 	{
 		readonly Path? _borderPath;
+		internal IBorderStroke? BorderStroke => _borderStroke;
 		IBorderStroke? _borderStroke;
 		FrameworkElement? _content;
 
