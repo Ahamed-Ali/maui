@@ -1,1 +1,2 @@
 #nullable enable
+~static Microsoft.Maui.Graphics.Platform.UIImageExtensions.ResizeImageSource(this UIKit.UIImage sourceImage, System.Runtime.InteropServices.NFloat maxWidth, System.Runtime.InteropServices.NFloat maxHeight, CoreGraphics.CGSize originalImageSize, bool shouldScaleUp = false) -> UIKit.UIImage

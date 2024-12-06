@@ -9,6 +9,7 @@ using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -336,7 +337,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (image != null)
 				{
-					icon = result?.Value;
+					 var originalImageSize = result?.Value?.Size ?? CGSize.Empty;
+					 // Referred from the default hamburger size 
+					 var defaultIconHeight = 23f;
+					 var defaultIconWidth = 23f;
+					 var buffer = 0.1;
+					 // if the image is bigger than the default available size, resize it
+					 if (originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
+					 {
+						icon = result?.Value?.ResizeImageSource(defaultIconHeight, defaultIconWidth, originalImageSize);
+					 }
+					 else
+					 {
+						icon = result?.Value;
+					 }
+					
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
@@ -381,8 +396,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateBackButtonTitle();
 		}
-
-
 		void UpdateBackButtonTitle()
 		{
 			var behavior = BackButtonBehavior;
