@@ -201,12 +201,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
-			editText.SetInputType(entry);
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 
 			// Restart the input on the current focused EditText
 			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
-			imm?.RestartInput(editText);
+			imm?.RestartInput(editText);		
 		}
 
 		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes

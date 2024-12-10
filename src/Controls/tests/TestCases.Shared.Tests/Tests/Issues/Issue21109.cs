@@ -17,10 +17,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EntryReturnTypeWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
-
+			//On InitialLoading returnType should work.
+			App.Tap("SearchEntry");
+			VerifyScreenshot();
 			// Verify that ReturnType works as expected.
 			if (App.IsKeyboardShown())
-				App.DismissKeyboard();
+			 	App.DismissKeyboard();
 
 			var returnType1 = App.FindElement("ReturnTypeResult").GetText();
 			App.Tap("ReturnTypeEntry");
