@@ -341,16 +341,15 @@ namespace Microsoft.Maui.Controls.Handlers
 			var itemsSource = _currentSearchHandler.ItemsSource;
 			var itemTemplate = _currentSearchHandler.ItemTemplate;
 
-			if (itemsSource == null)
-				return itemsSource;
-
-			if (itemTemplate is not null)
+			if (itemTemplate is not null && itemsSource is not null)
 			{
-				return TemplatedItemSourceFactory.Create(_currentSearchHandler.ItemsSource, _currentSearchHandler.ItemTemplate, _currentSearchHandler,
+				return TemplatedItemSourceFactory.Create(itemsSource, itemTemplate, _currentSearchHandler,
 				null, null, null, MauiContext);
 			}
-
-			return itemsSource;
+			else
+			{
+				return itemsSource;
+			}
 		}
 
 		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
