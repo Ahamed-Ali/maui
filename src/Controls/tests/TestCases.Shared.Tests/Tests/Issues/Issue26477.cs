@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #else
 			App.EnterText(AppiumQuery.ByXPath("//android.widget.EditText"), "Hello");
 #endif
-			//VerifyScreenshot();
+			VerifyScreenshot();
 
 		}
 	}
