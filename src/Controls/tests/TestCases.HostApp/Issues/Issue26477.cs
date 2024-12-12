@@ -8,7 +8,15 @@ namespace Maui.Controls.Sample.Issues
             ContentPage contentPage = new ContentPage();
             AddFlyoutItem(contentPage, "Main Page");
 
-            Shell.SetSearchHandler(contentPage, new Issue26477TestSearchHandler());
+			SearchHandler searchHandler = new SearchHandler()
+			{
+				ShowsResults = true,
+				ItemsSource = Enumerable.Range(0, 100)
+				.Select(_ => "searchresult")
+				.ToList()
+			};
+
+            Shell.SetSearchHandler(contentPage, searchHandler);
 
             contentPage.Content =
                 new StackLayout()
@@ -22,14 +30,4 @@ namespace Maui.Controls.Sample.Issues
                 };
         }
     }
-    public class Issue26477TestSearchHandler : SearchHandler
-	{
-		public Issue26477TestSearchHandler()
-		{
-			ShowsResults = true;
-			ItemsSource = Enumerable.Range(0, 100)
-				.Select(_ => "searchresult")
-				.ToList();
-		}
-	}
 }
