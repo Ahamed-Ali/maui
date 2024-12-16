@@ -928,7 +928,6 @@ Microsoft.Maui.IFlexLayout.GetGrow(Microsoft.Maui.IView! view) -> float
 Microsoft.Maui.IFlexLayout.GetOrder(Microsoft.Maui.IView! view) -> int
 Microsoft.Maui.IFlexLayout.GetShrink(Microsoft.Maui.IView! view) -> float
 Microsoft.Maui.IFlexLayout.JustifyContent.get -> Microsoft.Maui.Layouts.FlexJustify
-Microsoft.Maui.IFlexLayout.Layout(double width, double height) -> void
 Microsoft.Maui.IFlexLayout.Position.get -> Microsoft.Maui.Layouts.FlexPosition
 Microsoft.Maui.IFlexLayout.Wrap.get -> Microsoft.Maui.Layouts.FlexWrap
 Microsoft.Maui.IFlyout

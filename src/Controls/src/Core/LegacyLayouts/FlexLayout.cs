@@ -306,11 +306,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			InitItemProperties(view, item);
 			if (!(view is FlexLayout))
 			{ //inner layouts don't get measured
-				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
+				item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool isMeasuring) =>
 				{
 					var sizeConstrains = item.GetConstraints();
-					sizeConstrains.Width = (_measuring && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
-					sizeConstrains.Height = (_measuring && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
+					sizeConstrains.Width = (isMeasuring && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
+					sizeConstrains.Height = (isMeasuring && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
 					var request = view.Measure(sizeConstrains.Width, sizeConstrains.Height, MeasureFlags.None).Request;
 					w = (float)request.Width;
 					h = (float)request.Height;
@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (_root == null)
 				return;
 
-			Layout(width, height);
+			Layout(width, height,false);
 			foreach (var child in Children)
 			{
 				var frame = GetFlexItem(child).GetFrame();
@@ -431,7 +431,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		bool _measuring;
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
@@ -443,7 +442,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (!double.IsPositiveInfinity(widthConstraint) && !double.IsPositiveInfinity(heightConstraint))
 				return new SizeRequest(new Size(widthConstraint, heightConstraint));
 
-			_measuring = true;
 			//1. Set Shrink to 0, set align-self to start (to avoid stretching)
 			//   Set Image.Aspect to Fill to get the value we expect in measuring
 			foreach (var child in Children)
@@ -454,7 +452,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					item.AlignSelf = Flex.AlignSelf.Start;
 				}
 			}
-			Layout(widthConstraint, heightConstraint);
+			Layout(widthConstraint, heightConstraint, true);
 
 			//2. look at the children location
 			if (double.IsPositiveInfinity(widthConstraint))
@@ -479,17 +477,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 					item.AlignSelf = (Flex.AlignSelf)(FlexAlignSelf)child.GetValue(AlignSelfProperty);
 				}
 			}
-			_measuring = false;
+
 			return new SizeRequest(new Size(widthConstraint, heightConstraint));
 		}
 
-		void Layout(double width, double height)
+		void Layout(double width, double height, bool isMeasuring = true)
 		{
 			if (_root.Parent != null)   //Layout is only computed at root level
 				return;
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
-			_root.Layout();
+			_root.Layout(isMeasuring);
 		}
 	}
 }
