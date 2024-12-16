@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Layouts
 			double availableWidth = bounds.Width - padding.HorizontalThickness;
 			double availableHeight = bounds.Height - padding.VerticalThickness;
 
-			FlexLayout.Layout(availableWidth, availableHeight, false);
+			FlexLayout.Layout(availableWidth, availableHeight);
 
 			foreach (var child in FlexLayout)
 			{
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Layouts
 			double measuredHeight = 0;
 			double measuredWidth = 0;
 
-			FlexLayout.Layout(availableWidth, availableHeight, true);
+			FlexLayout.Layout(availableWidth, availableHeight);
 
 			foreach (var child in FlexLayout)
 			{

@@ -77,6 +77,6 @@ namespace Microsoft.Maui
 
 		Rect GetFlexFrame(IView view);
 
-		void Layout(double width, double height, bool isMeasuring = true);
+		void Layout(double width, double height);
 	}
 }

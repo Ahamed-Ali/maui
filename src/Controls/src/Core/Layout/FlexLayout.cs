@@ -470,10 +470,15 @@ namespace Microsoft.Maui.Controls
 		{
 			var layoutManager = _layoutManager ??= CreateLayoutManager();
 
+			InMeasureMode = true;
 			var result = layoutManager.Measure(widthConstraint, heightConstraint);
+			InMeasureMode = false;
 
 			return result;
 		}
+
+		internal bool InMeasureMode { get; set; }
+
 		void AddFlexItem(int index, IView child)
 		{
 			if (_root == null)
@@ -490,16 +495,16 @@ namespace Microsoft.Maui.Controls
 			InitItemProperties(child, item);
 			if (child is not FlexLayout)
 			{
-				item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool isMeasuring) =>
+				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
 				{
 					Size request;
 
-					if (isMeasuring)
+					if (InMeasureMode)
 					{
 						var sizeConstraints = item.GetConstraints();
 
-						sizeConstraints.Width = (isMeasuring && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
-						sizeConstraints.Height = (isMeasuring && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
+						sizeConstraints.Width = (InMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
+						sizeConstraints.Height = (InMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
 
 						if (child is Image)
 						{
@@ -565,7 +570,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public void Layout(double width, double height, bool isMeasuring = true)
+		public void Layout(double width, double height)
 		{
 			if (_root.Parent != null)   //Layout is only computed at root level
 				return;
@@ -580,7 +585,7 @@ namespace Microsoft.Maui.Controls
 
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
-			_root.Layout(isMeasuring);
+			_root.Layout();
 
 			if (useMeasureHack)
 			{

@@ -4953,6 +4953,7 @@ Microsoft.Maui.Controls.FlexLayout.Direction.set -> void
 Microsoft.Maui.Controls.FlexLayout.FlexLayout() -> void
 Microsoft.Maui.Controls.FlexLayout.JustifyContent.get -> Microsoft.Maui.Layouts.FlexJustify
 Microsoft.Maui.Controls.FlexLayout.JustifyContent.set -> void
+Microsoft.Maui.Controls.FlexLayout.Layout(double width, double height) -> void
 Microsoft.Maui.Controls.FlexLayout.Position.get -> Microsoft.Maui.Layouts.FlexPosition
 Microsoft.Maui.Controls.FlexLayout.Position.set -> void
 Microsoft.Maui.Controls.FlexLayout.Wrap.get -> Microsoft.Maui.Layouts.FlexWrap
