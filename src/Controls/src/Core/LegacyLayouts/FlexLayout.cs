@@ -309,8 +309,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 				item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool inMeasureMode) =>
 				{
 					var sizeConstrains = item.GetConstraints();
-					sizeConstrains.Width = (_measuring && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
-					sizeConstrains.Height = (_measuring && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
+					sizeConstrains.Width = (inMeasureMode && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
+					sizeConstrains.Height = (inMeasureMode && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
 					var request = view.Measure(sizeConstrains.Width, sizeConstrains.Height, MeasureFlags.None).Request;
 					w = (float)request.Width;
 					h = (float)request.Height;
