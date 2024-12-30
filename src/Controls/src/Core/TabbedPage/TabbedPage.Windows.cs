@@ -9,6 +9,7 @@ using WApp = Microsoft.UI.Xaml.Application;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WPage = Microsoft.UI.Xaml.Controls.Page;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -48,6 +49,36 @@ namespace Microsoft.Maui.Controls
 			return _navigationFrame;
 		}
 
+		private void OnPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if(e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+			{
+				if (sender is Page page)
+				{
+					NavigationViewItemViewModel? vm = null;
+					// Find the corresponding ViewModel for the triggering Page
+					if (_navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> menuItems)
+					{
+						foreach (var item in menuItems)
+						{
+							if (item.Data == page)
+							{
+								vm = item;
+								break;
+							}
+						}
+					}
+
+					if (vm is not null)
+					{
+						vm.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
+						vm.SelectedForeground = SelectedTabColor?.AsPaint()?.ToPlatform();
+						vm.UnselectedForeground = UnselectedTabColor?.AsPaint()?.ToPlatform();
+					}
+				}
+			}
+		}
+
 		static FrameworkElement? OnCreatePlatformView(ViewHandler<ITabbedView, FrameworkElement> arg)
 		{
 			if (arg.VirtualView is TabbedPage tabbedPage)
@@ -83,6 +114,10 @@ namespace Microsoft.Maui.Controls
 			Appearing += OnTabbedPageAppearing;
 			Disappearing += OnTabbedPageDisappearing;
 			NavigationFrame.Navigated += OnNavigated;
+			foreach (var child in Children)
+			{
+				child.PropertyChanged += OnPagePropertyChanged;
+			}
 
 			// If CreatePlatformView didn't set the NavigationView then that means we are using the
 			// WindowRootView for our tabs
@@ -133,6 +168,10 @@ namespace Microsoft.Maui.Controls
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
+			foreach(var child in Children)
+			{
+				child.PropertyChanged -= OnPagePropertyChanged;
+			}
 			if (_navigationView != null)
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
 
@@ -325,6 +364,7 @@ namespace Microsoft.Maui.Controls
 					(vm, page) =>
 					{
 						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
+						vm.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
 						vm.Content = page.Title;
 						vm.Data = page;
 						vm.SelectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
