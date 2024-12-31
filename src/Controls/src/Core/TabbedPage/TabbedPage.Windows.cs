@@ -51,29 +51,22 @@ namespace Microsoft.Maui.Controls
 
 		private void OnPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if(e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
 			{
 				if (sender is Page page)
 				{
-					NavigationViewItemViewModel? vm = null;
-					// Find the corresponding ViewModel for the triggering Page
-					if (_navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> menuItems)
+					 //Find the corresponding ViewModel for the triggering Page
+					if (_navigationView?.MenuItemsSource is ObservableCollection<NavigationViewItemViewModel> menuItems)
 					{
 						foreach (var item in menuItems)
 						{
 							if (item.Data == page)
 							{
-								vm = item;
+								item.Icon = page.IconImageSource?.ToIconSource(Handler?.MauiContext!)?.CreateIconElement();
+								item.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
 								break;
 							}
 						}
-					}
-
-					if (vm is not null)
-					{
-						vm.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
-						vm.SelectedForeground = SelectedTabColor?.AsPaint()?.ToPlatform();
-						vm.UnselectedForeground = UnselectedTabColor?.AsPaint()?.ToPlatform();
 					}
 				}
 			}

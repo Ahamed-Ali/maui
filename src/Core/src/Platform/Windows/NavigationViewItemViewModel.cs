@@ -178,6 +178,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_iconColor = value;
 				OnPropertyChanged(nameof(IconColor));
+				UpdateForeground();
 			}
 		}
 
