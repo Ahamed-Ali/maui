@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 				if (sender is Page page)
 				{
 					 //Find the corresponding ViewModel for the triggering Page
-					if (_navigationView?.MenuItemsSource is ObservableCollection<NavigationViewItemViewModel> menuItems)
+					if (_navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> menuItems)
 					{
 						foreach (var item in menuItems)
 						{
