@@ -96,9 +96,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (view == null)
 				return false;
 
-			// TODO MAUI
-			//if (view is SwipeView)
-			//return true;
+			if (view is MauiSwipeView)
+				return true;
 
 			return IsSwipeView(view.Superview);
 		}
