@@ -82,7 +82,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				// Create our section layout
 				var section = NSCollectionLayoutSection.Create(group: group);
-				section.InterGroupSpacing = (nfloat)(VirtualView.ItemsLayout as LinearItemsLayout).ItemSpacing;
+
+				if (VirtualView.ItemsLayout is LinearItemsLayout linearItemsLayout)
+				{
+					section.InterGroupSpacing = (nfloat)linearItemsLayout.ItemSpacing;
+				}
+				
 				section.OrthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
