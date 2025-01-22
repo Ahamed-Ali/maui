@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 			nfloat itemSpacing = 0;
+			NSDirectionalEdgeInsets contentInsets = new NSDirectionalEdgeInsets(0, 0, 0, 0);
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 			{
@@ -59,6 +60,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					sectionMargin = VirtualView.PeekAreaInsets.VerticalThickness / 2;
 					var newGroupHeight = environment.Container.ContentSize.Height - VirtualView.PeekAreaInsets.VerticalThickness;
 					groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
+					//properly maintained PeekAreaInsets before the first item and after the last item for the vertical orientation 
+					contentInsets = new NSDirectionalEdgeInsets((nfloat)sectionMargin, 0, (nfloat)sectionMargin, 0);
 					groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 				}
 				else
@@ -87,6 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				section.OrthogonalScrollingBehavior = IsHorizontal
 				? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered
 				: UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
+				section.ContentInsets = contentInsets;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
 					//This will allow us to SetPosition when we are scrolling the items
