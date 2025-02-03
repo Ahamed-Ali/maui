@@ -256,17 +256,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
-				//Get the soft input mode from the parent activity
-				var activity = RequireContext() as global::Android.App.Activity;
-				if (activity?.Window != null)
+				var attributes = Context?.GetActivity()?.Window?.Attributes;
+
+				if (attributes is not null)
 				{
-					var parentSoftInputMode = activity.Window.Attributes?.SoftInputMode ?? SoftInput.AdjustUnspecified;
-					dialog.Window.SetSoftInputMode(parentSoftInputMode);
-				}
-				else
-				{
-					// Fallback to AdjustPan if we can't get the parent's mode
-					dialog.Window.SetSoftInputMode(SoftInput.AdjustPan);
+					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
 
 				return dialog;
