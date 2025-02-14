@@ -69,6 +69,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (PlatformHandler?.VirtualView is not null)
+			{
+				PlatformHandler.VirtualView.Arrange(Bounds.ToRectangle());
+			}
+		}
+
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
@@ -81,8 +91,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var measure =
 						PlatformHandler.VirtualView.Measure(preferredAttributes.Size.Width, double.PositiveInfinity);
 
-					ArrangeVirtualView();
-
 					preferredAttributes.Frame =
 						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
 							preferredAttributes.Frame.Width, measure.Height);
@@ -91,8 +99,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					var measure =
 						PlatformHandler.VirtualView.Measure(double.PositiveInfinity, preferredAttributes.Size.Height);
-
-					ArrangeVirtualView();
 
 					preferredAttributes.Frame =
 						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
@@ -103,12 +109,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			return preferredAttributes;
-		}
-
-		void ArrangeVirtualView()
-		{
-			var nativeBounds = PlatformHandler.ToPlatform().Frame.ToRectangle();
-			PlatformHandler.VirtualView?.Arrange(nativeBounds);
 		}
 
 		public override void PrepareForReuse()
