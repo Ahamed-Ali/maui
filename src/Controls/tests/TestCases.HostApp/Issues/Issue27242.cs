@@ -6,28 +6,24 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 27242, "[Android] WindowSoftInputModeAdjust is not working for modal pages", PlatformAffected.Android)]
 public class Issue27242 : ContentPage
 {
-
     public Issue27242()
     {
-
         var layout = new VerticalStackLayout() { Padding = new Thickness(20) };
-        var button1 = new Button { Text = "Go to Page1" };
+        var button1 = new Button { Text = "Go to ResizeModalPage" };
         button1.AutomationId = "Button1";
         button1.Clicked += async (s, e) => await Navigation.PushModalAsync(new Issue27242Page1());
         layout.Add(button1);
 
-        var button2 = new Button { Text = "Go to Page2" };
+        var button2 = new Button { Text = "Go to PanModalPage" };
         button2.AutomationId = "Button2";
         button2.Clicked += async (s, e) => await Navigation.PushModalAsync(new Issue27242Page2());
         layout.Add(button2);
         Content = layout;
     }
-
 }
 
 public class Issue27242Page1 : ContentPage
 {
-
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -65,7 +61,6 @@ public class Issue27242Page1 : ContentPage
 
 public class Issue27242Page2 : ContentPage
 {
-
     protected override void OnAppearing()
     {
         base.OnAppearing();
