@@ -7,6 +7,9 @@ namespace Microsoft.Maui.Controls.Handlers
 	{
 		public static new IPropertyMapper<RoundRectangle, IShapeViewHandler> Mapper = new PropertyMapper<RoundRectangle, IShapeViewHandler>(ShapeViewHandler.Mapper)
 		{
+#if IOS || MACCATALYST
+            [nameof(View.IsVisible)] = MapShape,
+#endif
 			[nameof(RoundRectangle.CornerRadius)] = MapCornerRadius
 		};
 
