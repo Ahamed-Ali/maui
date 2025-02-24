@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == RadiusXProperty.PropertyName ||
-				propertyName == RadiusYProperty.PropertyName)
+				propertyName == RadiusYProperty.PropertyName || propertyName == IsVisibleProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
 

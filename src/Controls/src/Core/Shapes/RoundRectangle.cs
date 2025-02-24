@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == CornerRadiusProperty.PropertyName)
+			if (propertyName == CornerRadiusProperty.PropertyName || propertyName == IsVisibleProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
 
