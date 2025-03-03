@@ -46,7 +46,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 			nfloat itemSpacing = 0;
-			NSDirectionalEdgeInsets contentInsets = new NSDirectionalEdgeInsets(0, 0, 0, 0);
 			NSCollectionLayoutGroup group = null;
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
@@ -62,8 +61,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var newGroupHeight = environment.Container.ContentSize.Height - VirtualView.PeekAreaInsets.VerticalThickness;
 					groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
 					groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
-					//properly maintained PeekAreaInsets before the first item and after the last item for the vertical orientation 
-					contentInsets = new NSDirectionalEdgeInsets((nfloat)VirtualView.PeekAreaInsets.Top, 0, (nfloat)VirtualView.PeekAreaInsets.Bottom, 0);
 				}
 				else
 				{
@@ -71,8 +68,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var newGroupWidth = environment.Container.ContentSize.Width - VirtualView.PeekAreaInsets.HorizontalThickness;
 					groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
 					groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-					//properly maintained PeekAreaInsets before the first item and after the last item for the Horizontal orientation 
-					contentInsets = new NSDirectionalEdgeInsets(0, (nfloat)VirtualView.PeekAreaInsets.Left, 0, (nfloat)VirtualView.PeekAreaInsets.Right);
 				}
 
 				// Each item has a size
@@ -101,7 +96,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				section.OrthogonalScrollingBehavior = IsHorizontal
 				? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered
 				: UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
-				section.ContentInsets = contentInsets;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
 					//This will allow us to SetPosition when we are scrolling the items
