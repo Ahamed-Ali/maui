@@ -98,8 +98,8 @@ namespace Microsoft.Maui.Platform
 			// relative to _this_ container. So we need to compute an adjusted position for it.
 
 			var contentFrame = content.Frame;
-			var contentOffsetX = contentFrame.X;
-			var contentOffsetY = contentFrame.Y;
+			var contentOffsetX = Math.Max(0, contentFrame.X);
+			var contentOffsetY = Math.Max(0, contentFrame.Y);
 
 			var clipBoundsCenter = clipBounds.Center;
 			var clipCenterX = clipBoundsCenter.X + (strokeThickness);
