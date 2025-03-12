@@ -105,7 +105,13 @@ namespace Microsoft.Maui.Platform
 			var clipCenterX = clipBoundsCenter.X + (strokeThickness);
 			var clipCenterY = clipBoundsCenter.Y + (strokeThickness);
 
-			CGPoint adjustedMaskPosition = new(clipCenterX - contentOffsetX, clipCenterY - contentOffsetY);
+			var maxHalfWidth = clipBounds.Width / 2;
+			var maxHalfHeight = clipBounds.Height / 2;
+
+			var adjustedX = Math.Min(clipCenterX - contentOffsetX, maxHalfWidth);
+			var adjustedY = Math.Min(clipCenterY - contentOffsetY, maxHalfHeight);
+
+			CGPoint adjustedMaskPosition = new(adjustedX, adjustedY);
 
 			_contentMask.Bounds = clipBounds;
 			_contentMask.Position = adjustedMaskPosition;
