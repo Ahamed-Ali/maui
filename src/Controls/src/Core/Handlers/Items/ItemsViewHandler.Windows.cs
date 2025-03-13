@@ -247,6 +247,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			CleanUpCollectionViewSource();
 
+			UpdateEmptyViewVisibility();
+
 			if (Element.ItemsSource == null)
 			{
 				return;
