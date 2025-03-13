@@ -305,28 +305,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var emptyView = Element.EmptyView;
+			var emptyViewTemplate = Element.EmptyViewTemplate;
 
-			if (emptyView == null)
+			if (emptyViewTemplate is not null)
 			{
-				return;
+				// If EmptyViewTemplate is provided, use it instead of EmptyView
+				_emptyView = RealizeEmptyViewTemplate(emptyView, emptyViewTemplate);
 			}
-
-			switch (emptyView)
+			else if (emptyView is not null)
 			{
-				case string text:
-					_emptyView = new TextBlock
-					{
-						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-						Text = text
-					};
-					break;
-				case View view:
-					_emptyView = RealizeEmptyView(view);
-					break;
-				default:
-					_emptyView = RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate);
-					break;
+				switch (emptyView)
+				{
+					case string text:
+						_emptyView = new TextBlock
+						{
+							HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+							VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+							Text = text
+						};
+						break;
+					case View view:
+						_emptyView = RealizeEmptyView(view);
+						break;
+					default:
+						_emptyView = RealizeEmptyViewTemplate(emptyView, null); // Fallback
+						break;
+				}
 			}
 
 			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
