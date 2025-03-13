@@ -247,11 +247,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			CleanUpCollectionViewSource();
 
-			if (Element.ItemsSource == null)
-			{
-				return;
-			}
-
 			CollectionViewSource = CreateCollectionViewSource();
 
 			if (CollectionViewSource?.Source is INotifyCollectionChanged incc)
@@ -281,7 +276,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsSource = Element.ItemsSource;
 			var itemTemplate = Element.ItemTemplate;
 
-			if (itemTemplate != null)
+			if (itemTemplate is not null && itemsSource is not null)
 			{
 				return new CollectionViewSource
 				{
