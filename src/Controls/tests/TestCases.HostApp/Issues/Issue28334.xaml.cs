@@ -19,7 +19,7 @@ public partial class Issue28334 : ContentPage
 
 	private void OnEmpytyViewChangeButtonClick(object sender, EventArgs e)
 	{
-		_viewModel.EmptyView = "EmpytView";
+		_viewModel.EmptyView = "EmptyView";
 	}
 
 	private void OnEmptyViewTemplateChangedButtonClick(object sender, EventArgs e)
