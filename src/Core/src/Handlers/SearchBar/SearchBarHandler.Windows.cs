@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded += OnLoaded;
 			platformView.QuerySubmitted += OnQuerySubmitted;
 			platformView.TextChanged += OnTextChanged;
+			platformView.GotFocus += OnGotFocus;
+			platformView.LostFocus += OnLostFocus;
 		}
 
 		protected override void DisconnectHandler(AutoSuggestBox platformView)
@@ -25,6 +27,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded -= OnLoaded;
 			platformView.QuerySubmitted -= OnQuerySubmitted;
 			platformView.TextChanged -= OnTextChanged;
+			platformView.GotFocus -= OnGotFocus;
+			platformView.LostFocus -= OnLostFocus;
 		}
 
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
@@ -107,6 +111,22 @@ namespace Microsoft.Maui.Handlers
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateKeyboard(searchBar);
+		}
+
+		private void OnLostFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (VirtualView is not null)
+			{
+				VirtualView.IsFocused = false;
+			}
+		}
+
+		private void OnGotFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (VirtualView is not null)
+			{
+				VirtualView.IsFocused = true;
+			}
 		}
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
