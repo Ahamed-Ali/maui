@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -145,6 +147,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.UpdateIsFocused(true);
 			}
+			else if (e.NewFocusedElement is TextBox textBox && GetParentOfType<AutoSuggestBox>(textBox) is AutoSuggestBox autoSuggestBox
+			&& FocusManagerMapping.TryGetValue(autoSuggestBox, out ViewHandler? handler1))
+			{
+				handler1.UpdateIsFocused(true);
+			}
 		}
 
 		static void FocusManager_LostFocus(object? sender, FocusManagerLostFocusEventArgs e)
@@ -153,6 +160,23 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.UpdateIsFocused(false);
 			}
+			else if (e.OldFocusedElement is TextBox textBox && GetParentOfType<AutoSuggestBox>(textBox) is AutoSuggestBox autoSuggestBox
+			&& FocusManagerMapping.TryGetValue(autoSuggestBox, out ViewHandler? handler1))
+			{
+				handler1.UpdateIsFocused(false);
+			}
+		}
+
+		static T? GetParentOfType<T>(DependencyObject? element) where T : DependencyObject
+		{
+			while (element is not null)
+			{
+				if (element is T parent)
+					return parent;  // Immediately return the AutoSuggestBox
+
+				element = VisualTreeHelper.GetParent(element);
+			}
+			return null;
 		}
 
 		void UpdateIsFocused(bool isFocused)
