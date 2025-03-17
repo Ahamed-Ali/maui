@@ -94,11 +94,6 @@ public class Issue28334ItemModel
 
 	public override string ToString()
 	{
-		if (!string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Description))
-			return $"{Name} - {Description}";
-		else if (!string.IsNullOrEmpty(Name))
-			return Name;
-		else
-			return base.ToString();
+		return $"{Name} - {Description}";
 	}
 }
