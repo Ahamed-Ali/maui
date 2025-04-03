@@ -633,7 +633,25 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 			else
 			{
+				// UnSelected tabs TextColor
+				if (barItemColor is not null)
+				{
+					defaultColor = barItemColor.ToPlatform().ToArgb();
+				}
+				else
+				{
+					defaultColor = _originalTabTextColors.DefaultColor;
+				}
 
+				// Selected tabs TextColor
+				if (barSelectedItemColor is not null)
+				{
+					checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
+				}
+				else
+				{
+					checkedColor = _originalTabTextColors.DefaultColor;
+				}
 			}
 
 			_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor);
