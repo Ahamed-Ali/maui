@@ -13,7 +13,6 @@ public class Issue28419 : ContentPage
 
         searchBar.Focused += (sender, e) =>
         {
-
             label.Text = "SearchBar Focused";
         };
 

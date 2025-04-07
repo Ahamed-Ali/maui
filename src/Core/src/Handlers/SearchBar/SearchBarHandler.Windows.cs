@@ -18,6 +18,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded += OnLoaded;
 			platformView.QuerySubmitted += OnQuerySubmitted;
 			platformView.TextChanged += OnTextChanged;
+			//In ViewHandler.Windows, FocusManager.GotFocus and LostFocus are handled for other controls. 
+			// However, for AutoSuggestBox, when handling the GotFocus or LostFocus methods, tapping the AutoSuggestBox causes e.NewFocusedElement and e.OldFocusedElement to be a TextBox (which receives the focus). 
+			// As a result, when comparing the PlatformView with the appropriate handler in FocusManagerMapping, the condition is not satisfied, causing the focus and unfocus methods to not work correctly. 
+			// To address this, I have specifically handled the focus and unfocus events for AutoSuggestBox here. 
 			platformView.GotFocus += OnGotFocus;
 			platformView.LostFocus += OnLostFocus;
 		}
@@ -167,6 +171,16 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.Text = sender.Text;
+		}
+
+		void OnGotFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			UpdateIsFocused(true);
+		}
+
+		void OnLostFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			UpdateIsFocused(false);
 		}
 	}
 }
