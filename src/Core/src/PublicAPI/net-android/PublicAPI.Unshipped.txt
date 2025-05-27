@@ -112,3 +112,4 @@ override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessib
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+override Microsoft.Maui.Platform.MauiTextView.OnTextChanged(Java.Lang.ICharSequence? text, int start, int lengthBefore, int lengthAfter) -> void
