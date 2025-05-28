@@ -33,36 +33,26 @@ namespace Microsoft.Maui.Platform
 
 				if (availableWidth > totalPadding)
 				{
-					Layout layout;
 					// Only create new layout if text, width or padding changed
 					if (_lastText != Text || _lastAvailableWidth != availableWidth || _lastTotalPadding != totalPadding || _cachedLayout is null)
 					{
-						layout = TextLayoutUtils.CreateLayout(Text, Paint, availableWidth - totalPadding, Android.Text.Layout.Alignment.AlignNormal);
-						_cachedLayout = layout;
+						_cachedLayout = TextLayoutUtils.CreateLayout(Text, Paint, availableWidth - totalPadding, Android.Text.Layout.Alignment.AlignNormal);
 						_lastText = Text;
 						_lastAvailableWidth = availableWidth;
 						_lastTotalPadding = totalPadding;
 					}
-					else
+					// since the original issue 27614 occurs when the text is multiline, we only apply custom width measurement for multiline text
+					if (_cachedLayout.LineCount > 1)
 					{
-						layout = _cachedLayout;
+						int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(_cachedLayout));
+						int requiredWidth = contentWidth + totalPadding;
+						int desiredWidth = Math.Min(requiredWidth, availableWidth);
+						widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
 					}
 
-					int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(layout));
-					int requiredWidth = contentWidth + totalPadding;
-					int desiredWidth = Math.Min(requiredWidth, availableWidth);
-					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
 				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-		}
-
-		protected override void OnTextChanged(Java.Lang.ICharSequence? text, int start, int lengthBefore, int lengthAfter)
-		{
-			base.OnTextChanged(text, start, lengthBefore, lengthAfter);
-			// Invalidate cache when text changes
-			_cachedLayout = null;
-			_lastText = null;
 		}
 
 		static float GetMaxLineWidth(Layout layout)
