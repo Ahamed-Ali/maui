@@ -140,6 +140,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 							var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
 
+							if (!IsIndexPathValid(goToIndexPath))
+							{
+								return;
+							}
+
 							//This will move the carousel to fake the loop
 							Controller.CollectionView.ScrollToItem(NSIndexPath.FromItemSection(pageIndex, 0), UICollectionViewScrollPosition.Left, false);
 
