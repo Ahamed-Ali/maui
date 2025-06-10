@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (alignment == Primitives.LayoutAlignment.Fill && measureSpec.GetMode() == MeasureSpecMode.AtMost)
 			{
-				return MeasureSpecMode.Exactly.MakeMeasureSpec(measureSpec.GetSize());
+				return MeasureSpecMode.Exactly.MakeMeasureSpec(measureSpec.GetSize() - 1);
 			}
 
 			return measureSpec;
