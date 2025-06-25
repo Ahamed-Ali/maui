@@ -105,5 +105,47 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 
 			Assert.Equal(UIUserInterfaceLayoutDirection.LeftToRight, labelFlowDirection);
 		}
+
+		[Fact]
+		public async Task ContentViewNeedsContainerWhenInsideBorder()
+		{
+			var border = new BorderStub();
+			var contentView = new ContentViewStub();
+			var label = new LabelStub { Text = "Test" };
+			
+			contentView.PresentedContent = label;
+			border.PresentedContent = contentView;
+			
+			// Set up the parent-child relationship
+			contentView.Parent = border;
+			label.Parent = contentView;
+
+			var needsContainer = await InvokeOnMainThreadAsync(() =>
+			{
+				var contentViewHandler = CreateHandler<ContentViewHandler>(contentView);
+				return contentViewHandler.NeedsContainer;
+			});
+
+			Assert.True(needsContainer);
+		}
+
+		[Fact]
+		public async Task ContentViewDoesNotNeedContainerWhenNotInsideBorder()
+		{
+			var contentView = new ContentViewStub();
+			var label = new LabelStub { Text = "Test" };
+			
+			contentView.PresentedContent = label;
+			label.Parent = contentView;
+
+			var needsContainer = await InvokeOnMainThreadAsync(() =>
+			{
+				var contentViewHandler = CreateHandler<ContentViewHandler>(contentView);
+				return contentViewHandler.NeedsContainer;
+			});
+
+			// Should only need container based on base class logic (background, etc.)
+			Assert.False(needsContainer);
+		}
 	}
 }
