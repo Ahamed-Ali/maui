@@ -1050,9 +1050,9 @@ namespace Microsoft.Maui.Platform
 
 		public double StrokeThickness => 0;
 
-		public double[] StrokeDashPattern => Array.Empty<double>();
+		public float[] StrokeDashPattern => Array.Empty<float>();
 
-		public double StrokeDashOffset => 0;
+		public float StrokeDashOffset => 0;
 
 		public LineCap StrokeLineCap => LineCap.Butt;
 
