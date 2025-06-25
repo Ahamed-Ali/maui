@@ -154,7 +154,12 @@ namespace Microsoft.Maui.Platform
 
 			if (platformView is ContentView contentView)
 			{
-				contentView.Clip = border;
+				// Only apply ContentView's internal clipping if it's not wrapped
+				// When wrapped (e.g., inside Border), let WrapperView handle clipping to avoid conflicts
+				if (contentView.Superview is not WrapperView)
+				{
+					contentView.Clip = border;
+				}
 			}
 		}
 	}
