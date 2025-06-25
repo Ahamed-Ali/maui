@@ -33,10 +33,6 @@ namespace Microsoft.Maui.Platform
 		FrameworkElement? _child;
 
 		UIElementCollection? _cachedChildren;
-		
-		// Track previous dimensions to avoid redundant UpdateClip calls
-		double _previousWidth = -1;
-		double _previousHeight = -1;
 
 		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
 		internal UIElementCollection CachedChildren
@@ -61,7 +57,6 @@ namespace Microsoft.Maui.Platform
 				if (_child is not null)
 				{
 					_child.SizeChanged -= OnChildSizeChanged;
-					_child.LayoutUpdated -= OnChildLayoutUpdated;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					CachedChildren.Remove(_child);
 				}
@@ -73,13 +68,8 @@ namespace Microsoft.Maui.Platform
 
 				_child = value;
 				_child.SizeChanged += OnChildSizeChanged;
-				_child.LayoutUpdated += OnChildLayoutUpdated;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
-				
-				// Reset previous dimensions when child changes
-				_previousWidth = -1;
-				_previousHeight = -1;
 			}
 		}
 
@@ -192,24 +182,6 @@ namespace Microsoft.Maui.Platform
 			UpdateClip();
 			UpdateBorder();
 			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
-		}
-
-		void OnChildLayoutUpdated(object? sender, object e)
-		{
-			// LayoutUpdated is called frequently, so only update clip when necessary
-			if (Child is not null && Clip is not null)
-			{
-				double width = Child.ActualWidth;
-				double height = Child.ActualHeight;
-				
-				// Only update clip if dimensions actually changed and are valid
-				if (width > 0 && height > 0 && (width != _previousWidth || height != _previousHeight))
-				{
-					_previousWidth = width;
-					_previousHeight = height;
-					UpdateClip();
-				}
-			}
 		}
 
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
