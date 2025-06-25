@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Platform
 				if (_child is not null)
 				{
 					_child.SizeChanged -= OnChildSizeChanged;
-					_child.LayoutUpdated -= OnChildLayoutUpdated;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					CachedChildren.Remove(_child);
 				}
@@ -69,7 +68,6 @@ namespace Microsoft.Maui.Platform
 
 				_child = value;
 				_child.SizeChanged += OnChildSizeChanged;
-				_child.LayoutUpdated += OnChildLayoutUpdated;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
 			}
@@ -184,23 +182,6 @@ namespace Microsoft.Maui.Platform
 			UpdateClip();
 			UpdateBorder();
 			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
-		}
-
-		void OnChildLayoutUpdated(object? sender, object e)
-		{
-			// Handle layout updates that might not trigger SizeChanged but could affect clipping
-			// This is particularly important for ContentView inside Border where timing issues occur
-			if (Child is not null && Clip is not null)
-			{
-				double width = Child.ActualWidth;
-				double height = Child.ActualHeight;
-
-				// Only update if we now have valid dimensions and clip wasn't applied before
-				if (width > 0 && height > 0)
-				{
-					UpdateClip();
-				}
-			}
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
