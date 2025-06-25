@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Platform
 				if (_child is not null)
 				{
 					_child.SizeChanged -= OnChildSizeChanged;
+					_child.LayoutUpdated -= OnChildLayoutUpdated;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					CachedChildren.Remove(_child);
 				}
@@ -68,6 +69,7 @@ namespace Microsoft.Maui.Platform
 
 				_child = value;
 				_child.SizeChanged += OnChildSizeChanged;
+				_child.LayoutUpdated += OnChildLayoutUpdated;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
 			}
@@ -184,26 +186,20 @@ namespace Microsoft.Maui.Platform
 			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 		}
 
-		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		void OnChildLayoutUpdated(object? sender, object e)
 		{
-			var result = base.ArrangeOverride(finalSize);
-
-			// When WrapperView is arranged (e.g., by ContentPanel), ensure UpdateClip is called
-			// with the current dimensions. This addresses timing issues where UpdateClip
-			// was called before proper dimensions were available.
+			// LayoutUpdated is called frequently, so only update clip when necessary
 			if (Child is not null && Clip is not null)
 			{
 				double width = Child.ActualWidth;
 				double height = Child.ActualHeight;
 				
-				// If we now have valid dimensions, retry UpdateClip
+				// Only update clip if we now have valid dimensions
 				if (width > 0 && height > 0)
 				{
 					UpdateClip();
 				}
 			}
-
-			return result;
 		}
 
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
