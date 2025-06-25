@@ -182,6 +182,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
+			
+			// If content already has a clip (e.g., from WrapperView), ignore applying Border's clip
+			if (visual.Clip is not null)
+			{
+				return;
+			}
+			
 			var compositor = visual.Compositor;
 
 			PathF? clipPath;

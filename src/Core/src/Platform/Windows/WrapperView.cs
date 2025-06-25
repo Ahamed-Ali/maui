@@ -33,6 +33,10 @@ namespace Microsoft.Maui.Platform
 		FrameworkElement? _child;
 
 		UIElementCollection? _cachedChildren;
+		
+		// Track previous dimensions to avoid redundant UpdateClip calls
+		double _previousWidth = -1;
+		double _previousHeight = -1;
 
 		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
 		internal UIElementCollection CachedChildren
@@ -72,6 +76,10 @@ namespace Microsoft.Maui.Platform
 				_child.LayoutUpdated += OnChildLayoutUpdated;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
+				
+				// Reset previous dimensions when child changes
+				_previousWidth = -1;
+				_previousHeight = -1;
 			}
 		}
 
@@ -194,9 +202,11 @@ namespace Microsoft.Maui.Platform
 				double width = Child.ActualWidth;
 				double height = Child.ActualHeight;
 				
-				// Only update clip if we now have valid dimensions
-				if (width > 0 && height > 0)
+				// Only update clip if dimensions actually changed and are valid
+				if (width > 0 && height > 0 && (width != _previousWidth || height != _previousHeight))
 				{
+					_previousWidth = width;
+					_previousHeight = height;
 					UpdateClip();
 				}
 			}
