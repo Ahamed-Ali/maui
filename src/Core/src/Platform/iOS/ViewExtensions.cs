@@ -207,6 +207,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformView is WrapperView wrapper)
 				wrapper.Clip = view.Clip;
+			else if (platformView is ContentView contentView)
+				contentView.Clip = view.Clip?.ToContentViewClip();
 		}
 
 		public static void UpdateShadow(this UIView platformView, IView view)
@@ -1025,5 +1027,37 @@ namespace Microsoft.Maui.Platform
 		{
 			view.Tag = NativeViewControlledByCrossPlatformLayout;
 		}
+
+		internal static IBorderStroke? ToContentViewClip(this IShape? shape)
+		{
+			if (shape == null)
+				return null;
+
+			return new ContentViewClipAdapter(shape);
+		}
+	}
+
+	internal class ContentViewClipAdapter : IBorderStroke
+	{
+		public ContentViewClipAdapter(IShape shape)
+		{
+			Shape = shape;
+		}
+
+		public IShape? Shape { get; }
+
+		public Paint? Stroke => null;
+
+		public double StrokeThickness => 0;
+
+		public double[] StrokeDashPattern => Array.Empty<double>();
+
+		public double StrokeDashOffset => 0;
+
+		public LineCap StrokeLineCap => LineCap.Butt;
+
+		public LineJoin StrokeLineJoin => LineJoin.Miter;
+
+		public float StrokeMiterLimit => 10;
 	}
 }
