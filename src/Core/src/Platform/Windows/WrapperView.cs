@@ -203,6 +203,28 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+		{
+			var result = base.ArrangeOverride(finalSize);
+
+			// When WrapperView is arranged (e.g., by ContentPanel), ensure UpdateClip is called
+			// with the current dimensions. This addresses timing issues where UpdateClip
+			// was called before proper dimensions were available.
+			if (Child is not null && Clip is not null)
+			{
+				double width = Child.ActualWidth;
+				double height = Child.ActualHeight;
+				
+				// If we now have valid dimensions, retry UpdateClip
+				if (width > 0 && height > 0)
+				{
+					UpdateClip();
+				}
+			}
+
+			return result;
+		}
+
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			// OnChildSizeChanged does not fire for Visibility changes to child
