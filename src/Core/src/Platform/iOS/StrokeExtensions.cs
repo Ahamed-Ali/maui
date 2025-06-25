@@ -149,13 +149,20 @@ namespace Microsoft.Maui.Platform
 					mauiCALayer.SetBorderLineCap(border.StrokeLineCap);
 				}
 
-				// Only set border shape for MauiCALayer clipping if it won't conflict with ContentView's internal clipping
-				// Border's ContentView (where CrossPlatformLayout is IBorderView) should get the shape for background drawing
-				// Regular ContentView inside other containers should not get clipping to avoid conflicts
-				if (platformView is not ContentView contentView || contentView.CrossPlatformLayout is IBorderView)
+				// For Border with content, disable global clipping to prevent content disappearing
+				// while still allowing background and border rendering
+				bool shouldClipContent = true;
+				if (platformView is ContentView contentView && contentView.CrossPlatformLayout is IBorderView)
 				{
-					mauiCALayer.SetBorderShape(border?.Shape);
+					// Check if Border has content that could be clipped
+					var hasContent = contentView.Subviews.Any(v => v.Tag == ContentView.ContentTag);
+					if (hasContent)
+					{
+						shouldClipContent = false;
+					}
 				}
+
+				mauiCALayer.SetBorderShape(border?.Shape, shouldClipContent);
 			}
 
 			if (platformView is ContentView contentView)

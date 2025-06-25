@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 	{
 		CGRect _bounds;
 		WeakReference<IShape?> _shape;
+		bool _shouldClipContent = true;
 
 		UIColor? _backgroundColor;
 		Paint? _background;
@@ -87,18 +88,22 @@ namespace Microsoft.Maui.Platform
 
 			var clipPath = GetClipPath();
 
-			if (clipPath! != null!)
+			// Only apply global clipping if enabled and we have a clip path
+			// For borders with content, we want to draw background/border but not clip content
+			if (_shouldClipContent && clipPath! != null!)
+			{
 				ctx.AddPath(clipPath);
-
-			ctx.Clip();
+				ctx.Clip();
+			}
 
 			DrawBackground(ctx);
 			DrawBorder(ctx);
 		}
 
-		public void SetBorderShape(IShape? shape)
+		public void SetBorderShape(IShape? shape, bool shouldClipContent = true)
 		{
 			_shape = new WeakReference<IShape?>(shape);
+			_shouldClipContent = shouldClipContent;
 
 			SetNeedsDisplay();
 		}
