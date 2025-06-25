@@ -147,5 +147,43 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			// Should only need container based on base class logic (background, etc.)
 			Assert.False(needsContainer);
 		}
+
+		[Fact]
+		public async Task ContentViewInsideBorderUsesWrapperViewForClipping()
+		{
+			var border = new BorderStub();
+			var contentView = new ContentViewStub();
+			var entry = new EntryStub { Text = "Test Entry" };
+			
+			contentView.PresentedContent = entry;
+			border.PresentedContent = contentView;
+			
+			// Set up the parent-child relationship
+			contentView.Parent = border;
+			entry.Parent = contentView;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var borderHandler = CreateHandler<ContentViewHandler>(border);
+				var contentViewHandler = CreateHandler<ContentViewHandler>(contentView);
+				
+				// ContentView should need container when inside border
+				Assert.True(contentViewHandler.NeedsContainer);
+				
+				// Apply dynamic clipping to test mask conflict resolution
+				contentView.Clip = new RoundRectangleGeometry
+				{
+					CornerRadius = new CornerRadius(10),
+					Rect = new Rect(0, 0, 200, 40)
+				};
+
+				// Update the clipping - this should not cause conflicts
+				contentViewHandler.PlatformView.UpdateClip(contentView);
+				
+				// ContentView should still be accessible and not hidden
+				Assert.NotNull(contentViewHandler.PlatformView);
+				Assert.False(contentViewHandler.PlatformView.Hidden);
+			});
+		}
 	}
 }
