@@ -21,6 +21,10 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// Check if the parent is a ContentPanel and this view is its Content
+			var parentContentPanel = PlatformView.Parent as ContentPanel;
+			var isContentPanelContent = parentContentPanel?.Content == PlatformView;
+
 #pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. MauiPanel might not be used everywhere though.
 			var oldParentChildren = PlatformView.Parent is MauiPanel mauiPanel
 				? mauiPanel.CachedChildren
@@ -37,13 +41,21 @@ namespace Microsoft.Maui.Handlers
 			ContainerView ??= new WrapperView();
 			((WrapperView)ContainerView).Child = PlatformView;
 
-			if (oldIndex is int idx && idx >= 0)
+			// If this view was the ContentPanel's Content, update the Content property
+			if (isContentPanelContent && parentContentPanel is not null)
 			{
-				oldParentChildren?.Insert(idx, ContainerView);
+				parentContentPanel.Content = ContainerView;
 			}
 			else
 			{
-				oldParentChildren?.Add(ContainerView);
+				if (oldIndex is int idx && idx >= 0)
+				{
+					oldParentChildren?.Insert(idx, ContainerView);
+				}
+				else
+				{
+					oldParentChildren?.Add(ContainerView);
+				}
 			}
 		}
 
@@ -56,6 +68,10 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// Check if the parent is a ContentPanel and the container is its Content
+			var parentContentPanel = ContainerView.Parent as ContentPanel;
+			var isContentPanelContent = parentContentPanel?.Content == ContainerView;
+
 #pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. MauiPanel might not be used everywhere though.
 			var oldParentChildren = ContainerView.Parent is MauiPanel mauiPanel
 				? mauiPanel.CachedChildren
@@ -63,6 +79,7 @@ namespace Microsoft.Maui.Handlers
 #pragma warning restore RS0030 // Do not use banned APIs
 
 			var oldIndex = oldParentChildren?.IndexOf(ContainerView);
+
 			if (oldIndex is int oldIdx && oldIdx >= 0)
 			{
 				oldParentChildren?.RemoveAt(oldIdx);
@@ -71,13 +88,21 @@ namespace Microsoft.Maui.Handlers
 			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
-			if (oldIndex is int idx && idx >= 0)
+			// If the container was the ContentPanel's Content, update the Content property
+			if (isContentPanelContent && parentContentPanel is not null)
 			{
-				oldParentChildren?.Insert(idx, PlatformView);
+				parentContentPanel.Content = PlatformView;
 			}
 			else
 			{
-				oldParentChildren?.Add(PlatformView);
+				if (oldIndex is int idx && idx >= 0)
+				{
+					oldParentChildren?.Insert(idx, PlatformView);
+				}
+				else
+				{
+					oldParentChildren?.Add(PlatformView);
+				}
 			}
 
 			static void CleanupContainerView(FrameworkElement? containerView)
