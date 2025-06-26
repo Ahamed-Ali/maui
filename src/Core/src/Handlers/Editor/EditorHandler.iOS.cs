@@ -11,6 +11,19 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiTextViewEventProxy _proxy = new();
 
+		public override bool NeedsContainer
+		{
+			get
+			{
+				// Check if the parent is a Border
+				if (VirtualView?.Parent is IBorderView)
+				{
+					return true;
+				}
+				return base.NeedsContainer;
+			}
+		}
+
 		protected override MauiTextView CreatePlatformView()
 		{
 			var platformEditor = new MauiTextView();

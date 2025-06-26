@@ -149,30 +149,12 @@ namespace Microsoft.Maui.Platform
 					mauiCALayer.SetBorderLineCap(border.StrokeLineCap);
 				}
 
-				// For Border with content, disable global clipping to prevent content disappearing
-				// while still allowing background and border rendering
-				bool shouldClipContent = true;
-				if (platformView is ContentView contentView && contentView.CrossPlatformLayout is IBorderView)
-				{
-					// Check if Border has content that could be clipped
-					var hasContent = contentView.Subviews.Any(v => v.Tag == ContentView.ContentTag);
-					if (hasContent)
-					{
-						shouldClipContent = false;
-					}
-				}
-
-				mauiCALayer.SetBorderShape(border?.Shape, shouldClipContent);
+				mauiCALayer.SetBorderShape(border?.Shape);
 			}
 
 			if (platformView is ContentView contentView)
 			{
-				// Only apply ContentView's internal clipping if it's not wrapped
-				// When wrapped (e.g., inside Border), let WrapperView handle clipping to avoid conflicts
-				if (contentView.Superview is not WrapperView)
-				{
-					contentView.Clip = border;
-				}
+				contentView.Clip = border;
 			}
 		}
 	}

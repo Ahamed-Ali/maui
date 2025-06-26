@@ -863,5 +863,26 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		[Fact(DisplayName = "Entry NeedsContainer When Inside Border")]
+		public async Task EntryNeedsContainerWhenInsideBorder()
+		{
+			var border = new BorderStub();
+			var entry = new EntryStub { Text = "Test Entry" };
+			border.Content = entry;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var entryHandler = CreateHandler<EntryHandler>(entry);
+				
+				// Verify that NeedsContainer returns true when Entry is inside Border
+				Assert.True(entryHandler.NeedsContainer);
+				
+				// Verify the platform view gets wrapped
+				var platformView = entryHandler.PlatformView;
+				Assert.NotNull(platformView);
+				Assert.IsType<MauiTextField>(platformView);
+			});
+		}
 	}
 }
