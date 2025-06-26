@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 	{
 		CGRect _bounds;
 		WeakReference<IShape?> _shape;
+		bool _shouldClipContent = true;
 
 		UIColor? _backgroundColor;
 		Paint? _background;
@@ -87,18 +88,20 @@ namespace Microsoft.Maui.Platform
 
 			var clipPath = GetClipPath();
 
-			if (clipPath! != null!)
+			if (clipPath! != null! && _shouldClipContent)
+			{
 				ctx.AddPath(clipPath);
-
-			ctx.Clip();
+				ctx.Clip();
+			}
 
 			DrawBackground(ctx);
 			DrawBorder(ctx);
 		}
 
-		public void SetBorderShape(IShape? shape)
+		public void SetBorderShape(IShape? shape, bool shouldClipContent = true)
 		{
 			_shape = new WeakReference<IShape?>(shape);
+			_shouldClipContent = shouldClipContent;
 
 			SetNeedsDisplay();
 		}
@@ -331,9 +334,23 @@ namespace Microsoft.Maui.Platform
 				var clipPath = GetClipPath();
 
 				if (clipPath! != null!)
+				{
 					ctx.AddPath(clipPath);
-
-				ctx.DrawPath(CGPathDrawingMode.Fill);
+					if (_shouldClipContent)
+					{
+						ctx.DrawPath(CGPathDrawingMode.Fill);
+					}
+					else
+					{
+						// When clipping is disabled, still draw the background within the shape bounds
+						ctx.DrawPath(CGPathDrawingMode.Fill);
+					}
+				}
+				else
+				{
+					// No shape defined, fill the entire bounds
+					ctx.FillRect(_bounds);
+				}
 			}
 		}
 
@@ -360,7 +377,8 @@ namespace Microsoft.Maui.Platform
 			if (_stroke != null)
 			{
 				ctx.ReplacePathWithStrokedPath();
-				ctx.Clip();
+				if (_shouldClipContent)
+					ctx.Clip();
 
 				DrawGradientPaint(ctx, _stroke);
 			}
