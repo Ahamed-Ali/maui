@@ -5,19 +5,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ContentViewHandler : ViewHandler<IContentView, ContentView>
 	{
-		public override bool NeedsContainer
-		{
-			get
-			{
-				// Check if the parent is a Border
-				if (VirtualView?.Parent is IBorderView)
-				{
-					return true;
-				}
-				return base.NeedsContainer;
-			}
-		}
-
 		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");

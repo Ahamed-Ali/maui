@@ -11,19 +11,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiTextFieldProxy _proxy = new();
 
-		public override bool NeedsContainer
-		{
-			get
-			{
-				// Check if the parent is a Border
-				if (VirtualView?.Parent is IBorderView)
-				{
-					return true;
-				}
-				return base.NeedsContainer;
-			}
-		}
-
 		protected override MauiTextField CreatePlatformView() =>
 			new MauiTextField
 			{

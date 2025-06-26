@@ -206,7 +206,47 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateClip(this UIView platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
+			{
 				wrapper.Clip = view.Clip;
+			}
+			else if (view.Clip != null && view.Parent is IBorderView)
+			{
+				// For non-wrapped controls inside Border that need clipping,
+				// apply clipping using CoreAnimation mask layer
+				ApplyClipToView(platformView, view.Clip);
+			}
+			else if (view.Clip == null)
+			{
+				// Clear any existing clip mask
+				platformView.Layer.Mask = null;
+			}
+		}
+
+		static void ApplyClipToView(UIView platformView, IShape? clip)
+		{
+			if (clip == null)
+			{
+				platformView.Layer.Mask = null;
+				return;
+			}
+
+			var bounds = platformView.Layer.Bounds;
+			if (bounds.Width <= 0 || bounds.Height <= 0)
+				return;
+
+			var maskLayer = new CAShapeLayer();
+			
+			// Convert IShape to CGPath using the same method as MauiCALayer
+			var rectangle = bounds.ToRectangle();
+			var path = clip.PathForBounds(rectangle);
+			var cgPath = path?.AsCGPath();
+			
+			if (cgPath != null)
+			{
+				maskLayer.Path = cgPath;
+				maskLayer.Frame = bounds;
+				platformView.Layer.Mask = maskLayer;
+			}
 		}
 
 		public static void UpdateShadow(this UIView platformView, IView view)
