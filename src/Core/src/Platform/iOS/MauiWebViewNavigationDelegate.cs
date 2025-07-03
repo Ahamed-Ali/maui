@@ -45,6 +45,46 @@ namespace Microsoft.Maui.Platform
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Success);
 
+			const string script = @"
+			(function() {
+			    var body = document.body;
+			    var html = document.documentElement;
+			    var height = Math.max(body.scrollHeight, body.offsetHeight, 
+			                          html.clientHeight, html.scrollHeight, html.offsetHeight);
+			    var width = Math.max(body.scrollWidth, body.offsetWidth, 
+			                         html.clientWidth, html.scrollWidth, html.offsetWidth);
+			    return JSON.stringify({ width: width, height: height });
+			})();";
+
+			webView.EvaluateJavaScript(script, (result, error) =>
+			{
+				if (error is not null || result is null)
+					return;
+
+				try
+				{
+					var sizeData = System.Text.Json.JsonDocument.Parse(result.ToString());
+					var width = sizeData.RootElement.GetProperty("width").GetDouble();
+					var height = sizeData.RootElement.GetProperty("height").GetDouble();
+
+					var currentFrame = webView.Frame;
+					var newWidth = Math.Max(44, width);
+					var newHeight = Math.Max(44, height);
+
+					// Only update the frame if the size has changed significantly
+					// This prevents unnecessary layout updates
+					if (Math.Abs(currentFrame.Width - newWidth) > 0.5 || Math.Abs(currentFrame.Height - newHeight) > 0.5)
+					{
+						webView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, newWidth, newHeight);
+						virtualView?.InvalidateMeasure();
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error parsing size data: {ex.Message}");
+				}
+			});
+
 			// ProcessNavigatedAsync calls UpdateCanGoBackForward
 			if (handler is WebViewHandler webViewHandler)
 				webViewHandler.ProcessNavigatedAsync(url).FireAndForget();
