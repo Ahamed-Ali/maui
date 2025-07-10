@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Maui.Controls.Sample.Issues.ScrollViewMarginIssue"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="ScrollView Margin Issue">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <!-- Test control with margin containing ScrollView -->
+        <Border Grid.Row="0" 
+                Margin="20"
+                Stroke="Red"
+                StrokeThickness="2"
+                BackgroundColor="LightGray">
+            <ScrollView AutomationId="TestScrollView"
+                        VerticalScrollBarVisibility="Default">
+                <StackLayout>
+                    <Label Text="Content Line 1" AutomationId="ContentLine1"/>
+                    <Label Text="Content Line 2"/>
+                    <Label Text="Content Line 3"/>
+                    <Label Text="Content Line 4"/>
+                    <Label Text="Content Line 5"/>
+                </StackLayout>
+            </ScrollView>
+        </Border>
+        
+        <!-- Status label to show if scrollbar is visible -->
+        <Label Grid.Row="1" 
+               x:Name="StatusLabel"
+               AutomationId="StatusLabel"
+               Text="Ready to test"
+               HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>
