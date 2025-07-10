@@ -664,10 +664,54 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// Check if the pointer event is relevant to the current element's window
+			if (!IsPointerEventRelevantToCurrentElement(e))
+			{
+				return;
+			}
+
 			var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 			foreach (var recognizer in pointerGestures)
 			{
 				SendPointerEvent.Invoke(view, recognizer);
+			}
+		}
+
+		bool IsPointerEventRelevantToCurrentElement(PointerRoutedEventArgs e)
+		{
+			if (_container is null)
+			{
+				return false;
+			}
+
+			// For multi-window scenarios, we need to validate that the pointer event
+			// is actually relevant to the current element's window
+			try
+			{
+				// Check if the container has a valid XamlRoot (indicates it's in a live window)
+				if (_container.XamlRoot is null)
+				{
+					return false;
+				}
+				// Get the current point relative to the container
+				var currentPoint = e.GetCurrentPoint(_container);
+				if (currentPoint is null)
+				{
+					return false; // If we can't get the point, the event is not relevant
+				}
+
+				// Validate that the event source is from the same visual tree as our container
+				if (e.OriginalSource is FrameworkElement sourceElement && sourceElement.XamlRoot != _container.XamlRoot)
+				{
+					return false; // Event is from a different window
+				}
+
+				return true;
+			}
+			catch
+			{
+				// If there's any error, don't process the event
+				return false;
 			}
 		}
 
