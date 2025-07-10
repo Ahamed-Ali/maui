@@ -693,12 +693,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					return false;
 				}
-				// Get the current point relative to the container
-				var currentPoint = e.GetCurrentPoint(_container);
-				if (currentPoint is null)
-				{
-					return false; // If we can't get the point, the event is not relevant
-				}
 
 				// Validate that the event source is from the same visual tree as our container
 				if (e.OriginalSource is FrameworkElement sourceElement && sourceElement.XamlRoot != _container.XamlRoot)
