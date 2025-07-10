@@ -664,11 +664,45 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// Check if the pointer event is relevant to the current element's window
+			if (!IsPointerEventRelevantToCurrentElement(e))
+			{
+				return;
+			}
+
 			var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 			foreach (var recognizer in pointerGestures)
 			{
 				SendPointerEvent.Invoke(view, recognizer);
 			}
+		}
+
+		private bool IsPointerEventRelevantToCurrentElement(PointerRoutedEventArgs e)
+		{
+			// Check if the container is available
+			if (_container == null)
+			{
+				return false;
+			}
+
+			// Check if the container has a valid XamlRoot (indicates it's in a live window)
+			if (_container.XamlRoot == null)
+			{
+				return false;
+			}
+
+			// For multi-window scenarios, validate that the event source is from the same visual tree
+			if (e.OriginalSource is DependencyObject eventSource)
+			{
+				// Check if the event source belongs to the same XamlRoot as our container
+				var sourceElement = eventSource as FrameworkElement;
+				if (sourceElement != null && sourceElement.XamlRoot != _container.XamlRoot)
+				{
+					return false; // Event is from a different window
+				}
+			}
+
+			return true;
 		}
 
 		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)

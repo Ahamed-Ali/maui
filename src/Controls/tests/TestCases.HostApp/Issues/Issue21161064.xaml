@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21161064"
+             Title="Issue 21161064">
+    <VerticalStackLayout Spacing="5">
+        <Button x:Name="NewWindowButton" 
+                Text="New Window" 
+                HorizontalOptions="Start" 
+                Clicked="NewWindowButton_Clicked"
+                AutomationId="NewWindowButton"/>
+        
+        <Label>
+            <Label.Text>
+                1: Open a new window
+2: Minimize the newly opened window
+3: Mouse-over the red square
+4: The PointerExited event should NOT rapidly get invoked
+            </Label.Text>
+        </Label>
+
+        <AbsoluteLayout WidthRequest="256" 
+                        HeightRequest="256" 
+                        BackgroundColor="Red" 
+                        IsClippedToBounds="True" 
+                        x:Name="TheBorder"
+                        AutomationId="RedSquare">
+            <VerticalStackLayout>
+                <Label Text="MAUI PointerGestureRecognizer" 
+                       VerticalOptions="Center" 
+                       HorizontalOptions="Center"/>
+                <Editor Text="Text Box" AutomationId="TestEditor"/>
+            </VerticalStackLayout>
+
+            <Ellipse WidthRequest="16" 
+                     HeightRequest="16" 
+                     Fill="Blue" 
+                     x:Name="Ellipse"
+                     AutomationId="BlueEllipse"/>
+
+            <AbsoluteLayout.GestureRecognizers>
+                <PointerGestureRecognizer PointerEntered="PointerGestureRecognizer_PointerEntered" 
+                                          PointerExited="PointerGestureRecognizer_PointerExited" 
+                                          PointerMoved="PointerGestureRecognizer_PointerMoved"/>
+            </AbsoluteLayout.GestureRecognizers>
+        </AbsoluteLayout>
+
+        <Label x:Name="EventLog" 
+               Text="Event Log:" 
+               AutomationId="EventLog"/>
+    </VerticalStackLayout>
+</ContentPage>
