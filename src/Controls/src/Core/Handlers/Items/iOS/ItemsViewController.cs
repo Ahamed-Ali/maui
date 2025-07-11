@@ -378,6 +378,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						constrainedSize.Width = superviewBounds.Width;
 					}
 				}
+				
+				// Also check for unreasonably small height that might indicate layout issues
+				if (constrainedSize.Height <= 1 && CollectionView.Superview != null)
+				{
+					var superviewBounds = CollectionView.Superview.Bounds;
+					if (superviewBounds.Height > constrainedSize.Height)
+					{
+						constrainedSize.Height = superviewBounds.Height;
+					}
+				}
 			}
 			
 			ItemsViewLayout.UpdateConstraints(constrainedSize, !_laidOut);

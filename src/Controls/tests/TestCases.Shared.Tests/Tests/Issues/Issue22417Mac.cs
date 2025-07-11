@@ -25,12 +25,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("ItemTitle");
 			App.WaitForElement("ItemDescription");
 
+			// Verify the size info shows reasonable dimensions
+			var sizeLabel = App.WaitForElement("SizeInfoLabel");
+			Assert.IsNotNull(sizeLabel);
+			
+			// The text should show actual dimensions, not "N/A" and not "0 x 0"
+			var sizeText = sizeLabel.GetText();
+			Assert.IsFalse(sizeText.Contains("N/A"), "CarouselView should have valid size");
+			Assert.IsFalse(sizeText.Contains("0.0 x"), "CarouselView width should not be zero");
+
 			// Add an item to ensure the sizing works correctly when items are added
 			App.Tap("AddItemButton");
 
 			await Task.Delay(500);
 
 			// Verify the sizing is still correct after adding an item
+			sizeLabel = App.WaitForElement("SizeInfoLabel");
+			sizeText = sizeLabel.GetText();
+			Assert.IsFalse(sizeText.Contains("0.0 x"), "CarouselView width should remain non-zero after adding items");
+			
 			VerifyScreenshot();
 		}
 	}
