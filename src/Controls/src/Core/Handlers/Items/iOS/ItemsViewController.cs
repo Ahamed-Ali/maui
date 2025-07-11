@@ -365,6 +365,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
 			var constrainedSize = contentBounds.Size;
+			
+			// On Mac Catalyst, the bounds calculation can sometimes be incorrect during initial layout
+			// If we get a zero or very small size, use the superview's bounds as a fallback
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(11))
+			{
+				if (constrainedSize.Width <= 1 && CollectionView.Superview != null)
+				{
+					var superviewBounds = CollectionView.Superview.Bounds;
+					if (superviewBounds.Width > constrainedSize.Width)
+					{
+						constrainedSize.Width = superviewBounds.Width;
+					}
+				}
+			}
+			
 			ItemsViewLayout.UpdateConstraints(constrainedSize, !_laidOut);
 		}
 
