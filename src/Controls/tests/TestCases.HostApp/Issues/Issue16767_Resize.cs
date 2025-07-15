@@ -40,25 +40,50 @@ public class Issue16767_Resize : TestContentPage
 	{
 		try
 		{
+			// Try the PlatformImageLoadingService approach used in working DeviceTests
+			var service = new PlatformImageLoadingService();
 			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
-			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream);
-			memoryStream.Position = 0;
-			var image = PlatformImage.FromStream(memoryStream);
-			resizeDrawable.SetImage(image);
+			
+			System.Diagnostics.Debug.WriteLine($"Original stream length: {stream.Length}");
+			System.Diagnostics.Debug.WriteLine("About to call service.FromStream");
+			
+			var image = service.FromStream(stream);
+			if (image != null && image.Width > 0 && image.Height > 0)
+			{
+				System.Diagnostics.Debug.WriteLine($"Successfully loaded image: {image.Width}x{image.Height}");
+				resizeDrawable.SetImage(image);
+				return;
+			}
+			else
+			{
+				System.Diagnostics.Debug.WriteLine("service.FromStream returned null or invalid image, trying fallback");
+				throw new InvalidOperationException("Failed to load image from FileSystem");
+			}
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Debug.WriteLine($"Primary load failed: {ex.Message}, trying fallback");
 			// Fallback to embedded resource approach
 			var assembly = GetType().GetTypeInfo().Assembly;
 			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
 			if (stream != null)
 			{
-				using var memoryStream = new MemoryStream();
-				await stream.CopyToAsync(memoryStream);
-				memoryStream.Position = 0;
-				var image = PlatformImage.FromStream(memoryStream);
-				resizeDrawable.SetImage(image);
+				System.Diagnostics.Debug.WriteLine($"Fallback stream length: {stream.Length}");
+				var service = new PlatformImageLoadingService();
+				var image = service.FromStream(stream);
+				if (image != null && image.Width > 0 && image.Height > 0)
+				{
+					System.Diagnostics.Debug.WriteLine($"Fallback successfully loaded image: {image.Width}x{image.Height}");
+					resizeDrawable.SetImage(image);
+				}
+				else
+				{
+					System.Diagnostics.Debug.WriteLine("Fallback also failed to load image");
+				}
+			}
+			else
+			{
+				System.Diagnostics.Debug.WriteLine("Embedded resource stream is null");
 			}
 		}
 	}
