@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Storage;
 using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Controls.TestCases.HostApp.Issues;
@@ -45,9 +46,8 @@ public class Issue30006 : ContentPage
 
 	async Task<IImage> LoadImageAsync()
 	{
-		var assembly = GetType().GetTypeInfo().Assembly;
-		using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
-		return await Task.FromResult(PlatformImage.FromStream(stream));
+		using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
+		return PlatformImage.FromStream(stream);
 	}
 
 	async void OnDownSize(object sender, EventArgs e)

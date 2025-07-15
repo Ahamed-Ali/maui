@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Storage;
 using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Controls.TestCases.HostApp.Issues;
@@ -44,12 +45,8 @@ public class Issue16767_DownsizeDrawable : IDrawable
 {
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
-		IImage image;
-		var assembly = GetType().GetTypeInfo().Assembly;
-		using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
-		{
-			image = PlatformImage.FromStream(stream);
-		}
+		// Use the synchronous approach that works with FileSystem
+		IImage image = LoadImageSync();
 		if (image is not null)
 		{
 			float spacing = 20;
@@ -74,6 +71,29 @@ public class Issue16767_DownsizeDrawable : IDrawable
 			var downsized2 = image.Downsize(100);
 			canvas.SetFillImage(downsized2);
 			canvas.FillRectangle(0, currentY, 240, downsized2.Height);
+		}
+	}
+
+	private IImage LoadImageSync()
+	{
+		try
+		{
+			// First try using FileSystem for MauiAsset
+			var task = FileSystem.OpenAppPackageFileAsync("royals.png");
+			task.Wait();
+			using (var stream = task.Result)
+			{
+				return PlatformImage.FromStream(stream);
+			}
+		}
+		catch
+		{
+			// Fallback to embedded resource approach
+			var assembly = GetType().GetTypeInfo().Assembly;
+			using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
+			{
+				return stream != null ? PlatformImage.FromStream(stream) : null;
+			}
 		}
 	}
 }
