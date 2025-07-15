@@ -48,7 +48,10 @@ public class Issue16767_DownSize : TestContentPage
 		try
 		{
 			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
-			var image = PlatformImage.FromStream(stream);
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream);
+			memoryStream.Position = 0;
+			var image = PlatformImage.FromStream(memoryStream);
 			downSizeDrawable.SetImage(image);
 		}
 		catch
@@ -58,7 +61,10 @@ public class Issue16767_DownSize : TestContentPage
 			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
 			if (stream != null)
 			{
-				var image = PlatformImage.FromStream(stream);
+				using var memoryStream = new MemoryStream();
+				await stream.CopyToAsync(memoryStream);
+				memoryStream.Position = 0;
+				var image = PlatformImage.FromStream(memoryStream);
 				downSizeDrawable.SetImage(image);
 			}
 		}

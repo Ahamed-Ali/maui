@@ -47,7 +47,10 @@ public class Issue21886 : ContentPage
 	async Task<IImage> LoadImageAsync()
 	{
 		using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
-		return PlatformImage.FromStream(stream);
+		using var memoryStream = new MemoryStream();
+		await stream.CopyToAsync(memoryStream);
+		memoryStream.Position = 0;
+		return PlatformImage.FromStream(memoryStream);
 	}
 
 	async void OnResize(object sender, EventArgs e)
