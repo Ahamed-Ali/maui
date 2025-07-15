@@ -38,16 +38,45 @@ public class Issue16767_DownSize : TestContentPage
 
 		rootLayout.Add(descriptionLabel);
 		Content = rootLayout;
+		
+		// Pre-load the image asynchronously to avoid threading issues in Draw method
+		_ = LoadImageAsync();
+	}
+	
+	async Task LoadImageAsync()
+	{
+		try
+		{
+			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
+			var image = PlatformImage.FromStream(stream);
+			downSizeDrawable.SetImage(image);
+		}
+		catch
+		{
+			// Fallback to embedded resource approach
+			var assembly = GetType().GetTypeInfo().Assembly;
+			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
+			if (stream != null)
+			{
+				var image = PlatformImage.FromStream(stream);
+				downSizeDrawable.SetImage(image);
+			}
+		}
 	}
 }
 
 public class Issue16767_DownsizeDrawable : IDrawable
 {
+	IImage _image;
+	
+	internal void SetImage(IImage image)
+	{
+		_image = image;
+	}
+
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
-		// Use the synchronous approach that works with FileSystem
-		IImage image = LoadImageSync();
-		if (image is not null)
+		if (_image is not null)
 		{
 			float spacing = 20;
 			float currentY = 0;
@@ -59,7 +88,7 @@ public class Issue16767_DownsizeDrawable : IDrawable
 			canvas.DrawString("Downsize (100, 200)", 0, currentY, dirtyRect.Width, 30, HorizontalAlignment.Left, VerticalAlignment.Top);
 			currentY += 30;
 
-			var downsized1 = image.Downsize(100, 200);
+			var downsized1 = _image.Downsize(100, 200);
 			canvas.SetFillImage(downsized1);
 			canvas.FillRectangle(0, currentY, 240, downsized1.Height);
 			currentY += downsized1.Height + spacing;
@@ -68,32 +97,9 @@ public class Issue16767_DownsizeDrawable : IDrawable
 			canvas.DrawString("Downsize (100)", 0, currentY, dirtyRect.Width, 30, HorizontalAlignment.Left, VerticalAlignment.Top);
 			currentY += 30;
 
-			var downsized2 = image.Downsize(100);
+			var downsized2 = _image.Downsize(100);
 			canvas.SetFillImage(downsized2);
 			canvas.FillRectangle(0, currentY, 240, downsized2.Height);
-		}
-	}
-
-	private IImage LoadImageSync()
-	{
-		try
-		{
-			// First try using FileSystem for MauiAsset
-			var task = FileSystem.OpenAppPackageFileAsync("royals.png");
-			task.Wait();
-			using (var stream = task.Result)
-			{
-				return PlatformImage.FromStream(stream);
-			}
-		}
-		catch
-		{
-			// Fallback to embedded resource approach
-			var assembly = GetType().GetTypeInfo().Assembly;
-			using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
-			{
-				return stream != null ? PlatformImage.FromStream(stream) : null;
-			}
 		}
 	}
 }

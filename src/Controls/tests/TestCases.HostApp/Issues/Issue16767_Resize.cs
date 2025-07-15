@@ -16,9 +16,9 @@ public class Issue16767_Resize : TestContentPage
 	RadioButton resizeModeFit;
 	RadioButton resizeModeBleed;
 	RadioButton resizeModeStretch;
+	
 	protected override void Init()
 	{
-
 		var rootLayout = new VerticalStackLayout();
 
 		ReSizeGraphicsView = new GraphicsView()
@@ -31,6 +31,30 @@ public class Issue16767_Resize : TestContentPage
 		rootLayout.Add(CreateResizeModeSelection());
 		rootLayout.Add(ReSizeGraphicsView);
 		Content = rootLayout;
+		
+		// Pre-load the image asynchronously to avoid threading issues in Draw method
+		_ = LoadImageAsync();
+	}
+	
+	async Task LoadImageAsync()
+	{
+		try
+		{
+			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
+			var image = PlatformImage.FromStream(stream);
+			resizeDrawable.SetImage(image);
+		}
+		catch
+		{
+			// Fallback to embedded resource approach
+			var assembly = GetType().GetTypeInfo().Assembly;
+			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
+			if (stream != null)
+			{
+				var image = PlatformImage.FromStream(stream);
+				resizeDrawable.SetImage(image);
+			}
+		}
 	}
 
 	HorizontalStackLayout CreateResizeModeSelection()
@@ -90,44 +114,25 @@ public class Issue16767_Resize : TestContentPage
 public class Issue16767_ResizeDrawable : IDrawable
 {
 	ResizeMode _resizeMode;
+	IImage _image;
 
 	internal void SetResizeMode(ResizeMode resizeMode)
 	{
 		_resizeMode = resizeMode;
 	}
+	
+	internal void SetImage(IImage image)
+	{
+		_image = image;
+	}
 
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
-		// Use the synchronous approach that works with FileSystem
-		IImage image = LoadImageSync();
-		if (image is not null)
+		if (_image is not null)
 		{
-			var resizedImage = image.Resize(100, 200, _resizeMode);
+			var resizedImage = _image.Resize(100, 200, _resizeMode);
 			canvas.SetFillImage(resizedImage);
 			canvas.FillRectangle(0, 0, 200, resizedImage.Height);
-		}
-	}
-
-	private IImage LoadImageSync()
-	{
-		try
-		{
-			// First try using FileSystem for MauiAsset
-			var task = FileSystem.OpenAppPackageFileAsync("royals.png");
-			task.Wait();
-			using (var stream = task.Result)
-			{
-				return PlatformImage.FromStream(stream);
-			}
-		}
-		catch
-		{
-			// Fallback to embedded resource approach
-			var assembly = GetType().GetTypeInfo().Assembly;
-			using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
-			{
-				return stream != null ? PlatformImage.FromStream(stream) : null;
-			}
 		}
 	}
 }
