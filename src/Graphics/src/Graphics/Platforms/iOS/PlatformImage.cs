@@ -163,10 +163,6 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var data = NSData.FromStream(stream);
 			var image = UIImage.LoadFromData(data);
-			if (image == null)
-			{
-				return null;
-			}
 			return new PlatformImage(image);
 		}
 	}

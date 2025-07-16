@@ -47,7 +47,18 @@ public class Issue30006 : ContentPage
 	{
 		var assembly = GetType().GetTypeInfo().Assembly;
 		using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
-		return await Task.FromResult(PlatformImage.FromStream(stream));
+		if (stream != null)
+		{
+			// Ensure stream is at the beginning and fully load into memory for .NET 10.0 compatibility
+			stream.Position = 0;
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream);
+			memoryStream.Position = 0;
+			
+			// Keep the MemoryStream alive during the entire PlatformImage.FromStream call
+			return PlatformImage.FromStream(memoryStream);
+		}
+		return null;
 	}
 
 	async void OnDownSize(object sender, EventArgs e)
