@@ -157,6 +157,11 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
 			var bitmap = BitmapFactory.DecodeStream(stream);
+			
+			// Handle null bitmap returns that can occur in .NET 10.0 with new marshal methods
+			if (bitmap == null)
+				return null;
+				
 			return new PlatformImage(bitmap);
 		}
 	}

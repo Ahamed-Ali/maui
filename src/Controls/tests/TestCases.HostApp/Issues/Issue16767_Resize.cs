@@ -98,20 +98,26 @@ public class Issue16767_ResizeDrawable : IDrawable
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
 		IImage image = null;
-		var assembly = GetType().GetTypeInfo().Assembly;
-		using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
+		
+		try
 		{
-			if (stream != null)
+			// Primary approach: Use FileSystem for MauiAsset (more reliable in .NET 10.0)
+			var task = FileSystem.OpenAppPackageFileAsync("royals.png");
+			task.Wait();
+			using (var stream = task.Result)
 			{
-				// Ensure stream is at the beginning and fully load into memory for .NET 10.0 compatibility
-				stream.Position = 0;
-				using (var memoryStream = new MemoryStream())
+				image = PlatformImage.FromStream(stream);
+			}
+		}
+		catch
+		{
+			// Fallback: Original embedded resource approach
+			var assembly = GetType().GetTypeInfo().Assembly;
+			using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
+			{
+				if (stream != null)
 				{
-					stream.CopyTo(memoryStream);
-					memoryStream.Position = 0;
-					
-					// Keep the MemoryStream alive during the entire PlatformImage.FromStream call
-					image = PlatformImage.FromStream(memoryStream);
+					image = PlatformImage.FromStream(stream);
 				}
 			}
 		}

@@ -45,20 +45,23 @@ public class Issue21886 : ContentPage
 
 	async Task<IImage> LoadImageAsync()
 	{
-		var assembly = GetType().GetTypeInfo().Assembly;
-		using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
-		if (stream != null)
+		try
 		{
-			// Ensure stream is at the beginning and fully load into memory for .NET 10.0 compatibility
-			stream.Position = 0;
-			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream);
-			memoryStream.Position = 0;
-			
-			// Keep the MemoryStream alive during the entire PlatformImage.FromStream call
-			return PlatformImage.FromStream(memoryStream);
+			// Primary approach: Use FileSystem for MauiAsset (more reliable in .NET 10.0)
+			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
+			return PlatformImage.FromStream(stream);
 		}
-		return null;
+		catch
+		{
+			// Fallback: Original embedded resource approach
+			var assembly = GetType().GetTypeInfo().Assembly;
+			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
+			if (stream != null)
+			{
+				return PlatformImage.FromStream(stream);
+			}
+			return null;
+		}
 	}
 
 	async void OnResize(object sender, EventArgs e)
