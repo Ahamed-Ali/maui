@@ -182,6 +182,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			var data = NSData.FromStream(stream);
 			var image = new NSImage(data);
 			NSApplication.CheckForIllegalCrossThreadCalls = previous;
+			
+			if (image == null || !image.IsValid)
+			{
+				return null;
+			}
 			return new PlatformImage(image);
 		}
 

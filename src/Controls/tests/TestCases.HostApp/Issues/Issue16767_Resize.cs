@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui.Graphics.Platform;
-using Microsoft.Maui.Storage;
 using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Controls.TestCases.HostApp.Issues;
@@ -16,9 +15,9 @@ public class Issue16767_Resize : TestContentPage
 	RadioButton resizeModeFit;
 	RadioButton resizeModeBleed;
 	RadioButton resizeModeStretch;
-	
 	protected override void Init()
 	{
+
 		var rootLayout = new VerticalStackLayout();
 
 		ReSizeGraphicsView = new GraphicsView()
@@ -31,61 +30,6 @@ public class Issue16767_Resize : TestContentPage
 		rootLayout.Add(CreateResizeModeSelection());
 		rootLayout.Add(ReSizeGraphicsView);
 		Content = rootLayout;
-		
-		// Pre-load the image asynchronously to avoid threading issues in Draw method
-		_ = LoadImageAsync();
-	}
-	
-	async Task LoadImageAsync()
-	{
-		try
-		{
-			// Try the PlatformImageLoadingService approach used in working DeviceTests
-			var service = new PlatformImageLoadingService();
-			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
-			
-			System.Diagnostics.Debug.WriteLine($"Original stream length: {stream.Length}");
-			System.Diagnostics.Debug.WriteLine("About to call service.FromStream");
-			
-			var image = service.FromStream(stream);
-			if (image != null && image.Width > 0 && image.Height > 0)
-			{
-				System.Diagnostics.Debug.WriteLine($"Successfully loaded image: {image.Width}x{image.Height}");
-				resizeDrawable.SetImage(image);
-				return;
-			}
-			else
-			{
-				System.Diagnostics.Debug.WriteLine("service.FromStream returned null or invalid image, trying fallback");
-				throw new InvalidOperationException("Failed to load image from FileSystem");
-			}
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Debug.WriteLine($"Primary load failed: {ex.Message}, trying fallback");
-			// Fallback to embedded resource approach
-			var assembly = GetType().GetTypeInfo().Assembly;
-			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
-			if (stream != null)
-			{
-				System.Diagnostics.Debug.WriteLine($"Fallback stream length: {stream.Length}");
-				var service = new PlatformImageLoadingService();
-				var image = service.FromStream(stream);
-				if (image != null && image.Width > 0 && image.Height > 0)
-				{
-					System.Diagnostics.Debug.WriteLine($"Fallback successfully loaded image: {image.Width}x{image.Height}");
-					resizeDrawable.SetImage(image);
-				}
-				else
-				{
-					System.Diagnostics.Debug.WriteLine("Fallback also failed to load image");
-				}
-			}
-			else
-			{
-				System.Diagnostics.Debug.WriteLine("Embedded resource stream is null");
-			}
-		}
 	}
 
 	HorizontalStackLayout CreateResizeModeSelection()
@@ -145,23 +89,24 @@ public class Issue16767_Resize : TestContentPage
 public class Issue16767_ResizeDrawable : IDrawable
 {
 	ResizeMode _resizeMode;
-	IImage _image;
 
 	internal void SetResizeMode(ResizeMode resizeMode)
 	{
 		_resizeMode = resizeMode;
 	}
-	
-	internal void SetImage(IImage image)
-	{
-		_image = image;
-	}
 
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
-		if (_image is not null)
+		IImage image;
+		var assembly = GetType().GetTypeInfo().Assembly;
+		using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
 		{
-			var resizedImage = _image.Resize(100, 200, _resizeMode);
+			image = PlatformImage.FromStream(stream);
+		}
+
+		if (image is not null)
+		{
+			var resizedImage = image.Resize(100, 200, _resizeMode);
 			canvas.SetFillImage(resizedImage);
 			canvas.FillRectangle(0, 0, 200, resizedImage.Height);
 		}

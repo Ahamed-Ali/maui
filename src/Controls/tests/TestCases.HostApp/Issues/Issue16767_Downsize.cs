@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui.Graphics.Platform;
-using Microsoft.Maui.Storage;
 using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Controls.TestCases.HostApp.Issues;
@@ -38,76 +37,20 @@ public class Issue16767_DownSize : TestContentPage
 
 		rootLayout.Add(descriptionLabel);
 		Content = rootLayout;
-		
-		// Pre-load the image asynchronously to avoid threading issues in Draw method
-		_ = LoadImageAsync();
-	}
-	
-	async Task LoadImageAsync()
-	{
-		try
-		{
-			// Try the PlatformImageLoadingService approach used in working DeviceTests
-			var service = new PlatformImageLoadingService();
-			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
-			
-			System.Diagnostics.Debug.WriteLine($"Original stream length: {stream.Length}");
-			System.Diagnostics.Debug.WriteLine("About to call service.FromStream");
-			
-			var image = service.FromStream(stream);
-			if (image != null && image.Width > 0 && image.Height > 0)
-			{
-				System.Diagnostics.Debug.WriteLine($"Successfully loaded image: {image.Width}x{image.Height}");
-				downSizeDrawable.SetImage(image);
-				return;
-			}
-			else
-			{
-				System.Diagnostics.Debug.WriteLine("service.FromStream returned null or invalid image, trying fallback");
-				throw new InvalidOperationException("Failed to load image from FileSystem");
-			}
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Debug.WriteLine($"Primary load failed: {ex.Message}, trying fallback");
-			// Fallback to embedded resource approach
-			var assembly = GetType().GetTypeInfo().Assembly;
-			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
-			if (stream != null)
-			{
-				System.Diagnostics.Debug.WriteLine($"Fallback stream length: {stream.Length}");
-				var service = new PlatformImageLoadingService();
-				var image = service.FromStream(stream);
-				if (image != null && image.Width > 0 && image.Height > 0)
-				{
-					System.Diagnostics.Debug.WriteLine($"Fallback successfully loaded image: {image.Width}x{image.Height}");
-					downSizeDrawable.SetImage(image);
-				}
-				else
-				{
-					System.Diagnostics.Debug.WriteLine("Fallback also failed to load image");
-				}
-			}
-			else
-			{
-				System.Diagnostics.Debug.WriteLine("Embedded resource stream is null");
-			}
-		}
 	}
 }
 
 public class Issue16767_DownsizeDrawable : IDrawable
 {
-	IImage _image;
-	
-	internal void SetImage(IImage image)
-	{
-		_image = image;
-	}
-
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
-		if (_image is not null)
+		IImage image;
+		var assembly = GetType().GetTypeInfo().Assembly;
+		using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
+		{
+			image = PlatformImage.FromStream(stream);
+		}
+		if (image is not null)
 		{
 			float spacing = 20;
 			float currentY = 0;
@@ -119,7 +62,7 @@ public class Issue16767_DownsizeDrawable : IDrawable
 			canvas.DrawString("Downsize (100, 200)", 0, currentY, dirtyRect.Width, 30, HorizontalAlignment.Left, VerticalAlignment.Top);
 			currentY += 30;
 
-			var downsized1 = _image.Downsize(100, 200);
+			var downsized1 = image.Downsize(100, 200);
 			canvas.SetFillImage(downsized1);
 			canvas.FillRectangle(0, currentY, 240, downsized1.Height);
 			currentY += downsized1.Height + spacing;
@@ -128,7 +71,7 @@ public class Issue16767_DownsizeDrawable : IDrawable
 			canvas.DrawString("Downsize (100)", 0, currentY, dirtyRect.Width, 30, HorizontalAlignment.Left, VerticalAlignment.Top);
 			currentY += 30;
 
-			var downsized2 = _image.Downsize(100);
+			var downsized2 = image.Downsize(100);
 			canvas.SetFillImage(downsized2);
 			canvas.FillRectangle(0, currentY, 240, downsized2.Height);
 		}
