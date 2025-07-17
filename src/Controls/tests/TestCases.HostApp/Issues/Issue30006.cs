@@ -47,19 +47,17 @@ public class Issue30006 : ContentPage
 	{
 		try
 		{
-			// Primary approach: Use FileSystem for MauiAsset (more reliable in .NET 10.0)
+			// Use FileSystem.OpenAppPackageFileAsync for MauiAsset approach
 			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
-			return PlatformImage.FromStream(stream);
+			// Copy to MemoryStream to ensure stream is properly buffered for marshal methods
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream);
+			memoryStream.Position = 0;
+			return PlatformImage.FromStream(memoryStream);
 		}
-		catch
+		catch (Exception ex)
 		{
-			// Fallback: Original embedded resource approach
-			var assembly = GetType().GetTypeInfo().Assembly;
-			using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
-			if (stream != null)
-			{
-				return PlatformImage.FromStream(stream);
-			}
+			System.Diagnostics.Debug.WriteLine($"Failed to load image: {ex.Message}");
 			return null;
 		}
 	}

@@ -33,11 +33,11 @@
     <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
-  <!-- Disable marshal methods for .NET 10.0 Android compatibility -->
-  <!-- This fixes startup hangs/crashes in Graphics IImage tests with BitmapFactory.DecodeStream -->
+  <!-- Test marshal methods compatibility with BitmapFactory.DecodeStreamAsync approach -->
+  <!-- This tests if using async BitmapFactory methods works better with .NET 10.0 marshal methods -->
   <!-- Reference: https://github.com/dotnet/core/blob/main/release-notes/10.0/preview/preview1/dotnetmaui.md#enable-marshal-methods-by-default -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
-    <AndroidEnableMarshalMethods>false</AndroidEnableMarshalMethods>
+    <AndroidEnableMarshalMethods>true</AndroidEnableMarshalMethods>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">

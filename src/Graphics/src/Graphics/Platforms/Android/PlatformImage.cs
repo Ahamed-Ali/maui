@@ -156,7 +156,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			var bitmap = BitmapFactory.DecodeStream(stream);
+			// Use async version for better .NET 10.0 marshal method compatibility
+			// The async version is more reliable with new marshal methods in Android
+			var task = BitmapFactory.DecodeStreamAsync(stream);
+			task.Wait();
+			var bitmap = task.Result;
 			
 			// Handle null bitmap returns that can occur in .NET 10.0 with new marshal methods
 			if (bitmap == null)

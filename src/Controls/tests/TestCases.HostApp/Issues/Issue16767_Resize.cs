@@ -101,25 +101,23 @@ public class Issue16767_ResizeDrawable : IDrawable
 		
 		try
 		{
-			// Primary approach: Use FileSystem for MauiAsset (more reliable in .NET 10.0)
+			// Use FileSystem.OpenAppPackageFileAsync for MauiAsset approach
 			var task = FileSystem.OpenAppPackageFileAsync("royals.png");
 			task.Wait();
 			using (var stream = task.Result)
 			{
-				image = PlatformImage.FromStream(stream);
-			}
-		}
-		catch
-		{
-			// Fallback: Original embedded resource approach
-			var assembly = GetType().GetTypeInfo().Assembly;
-			using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
-			{
-				if (stream != null)
+				// Copy to MemoryStream to ensure stream is properly buffered for marshal methods
+				using (var memoryStream = new MemoryStream())
 				{
-					image = PlatformImage.FromStream(stream);
+					stream.CopyTo(memoryStream);
+					memoryStream.Position = 0;
+					image = PlatformImage.FromStream(memoryStream);
 				}
 			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"Failed to load image: {ex.Message}");
 		}
 
 		if (image is not null)
