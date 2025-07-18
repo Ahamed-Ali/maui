@@ -161,6 +161,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
+
 			var data = NSData.FromStream(stream);
 			var image = UIImage.LoadFromData(data);
 			return new PlatformImage(image);

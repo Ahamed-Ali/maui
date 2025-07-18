@@ -222,6 +222,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
+			if (stream == null)
+				throw new ArgumentNullException(nameof(stream));
+
 			var creator = PlatformGraphicsService.Creator;
 
 			if (creator == null)
