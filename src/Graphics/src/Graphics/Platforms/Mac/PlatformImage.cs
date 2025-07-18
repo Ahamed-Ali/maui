@@ -174,9 +174,6 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			if (stream == null)
-				throw new ArgumentNullException(nameof(stream));
-
 			var previous = NSApplication.CheckForIllegalCrossThreadCalls;
 			NSApplication.CheckForIllegalCrossThreadCalls = false;
 			var data = NSData.FromStream(stream);

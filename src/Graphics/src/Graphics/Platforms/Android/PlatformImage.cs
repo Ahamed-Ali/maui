@@ -156,13 +156,13 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			if (stream == null)
-				throw new ArgumentNullException(nameof(stream));
-
-			// Copy stream data to a byte array to ensure marshaling stability
 			Bitmap bitmap;
 
-			// For memory efficiency, use a single MemoryStream and access its buffer directly
+			if (stream is null)
+			{
+				return null;
+			}
+			//For memory efficiency, use a single MemoryStream and access its buffer directly
 			using (var memoryStream = new MemoryStream())
 			{
 				if (stream.CanSeek)
@@ -174,15 +174,10 @@ namespace Microsoft.Maui.Graphics.Platform
 				// Get the buffer and actual length
 				byte[] buffer = memoryStream.GetBuffer();
 				int length = (int)memoryStream.Length;
-
 				bitmap = BitmapFactory.DecodeByteArray(buffer, 0, length);
-				if (bitmap == null)
-				{
-					throw new InvalidOperationException("Failed to decode image data. The image might be corrupted or in an unsupported format.");
-				}
 			}
 
-			return new PlatformImage(bitmap);
+			return bitmap != null ? new PlatformImage(bitmap) : null;
 		}
 	}
 }
