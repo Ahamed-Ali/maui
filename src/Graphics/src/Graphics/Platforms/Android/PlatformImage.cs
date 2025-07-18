@@ -157,19 +157,28 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
 			// Copy stream data to a byte array to ensure marshaling stability
-			byte[] buffer;
+			Bitmap bitmap;
+
+			// For memory efficiency, use a single MemoryStream and access its buffer directly
 			using (var memoryStream = new MemoryStream())
 			{
+				if (stream.CanSeek)
+				{
+					stream.Position = 0;
+				}
 				stream.CopyTo(memoryStream);
-				buffer = memoryStream.ToArray();
+
+				// Get the buffer and actual length
+				byte[] buffer = memoryStream.GetBuffer();
+				int length = (int)memoryStream.Length;
+
+				bitmap = BitmapFactory.DecodeByteArray(buffer, 0, length);
+				if (bitmap == null)
+				{
+					throw new InvalidOperationException("Failed to decode image data. The image might be corrupted or in an unsupported format.");
+				}
 			}
 
-			var bitmap = BitmapFactory.DecodeByteArray(buffer, 0, buffer.Length);
-			
-			// Handle null bitmap returns that can occur in .NET 10.0 with new marshal methods
-			if (bitmap == null)
-				return null;
-				
 			return new PlatformImage(bitmap);
 		}
 	}
