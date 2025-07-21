@@ -97,11 +97,27 @@ public class Issue16767_ResizeDrawable : IDrawable
 
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
-		IImage image;
-		var assembly = GetType().GetTypeInfo().Assembly;
-		using (var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png"))
+		IImage image = null;
+		
+		try
 		{
-			image = PlatformImage.FromStream(stream);
+			// Use FileSystem.OpenAppPackageFileAsync for MauiAsset approach
+			var task = FileSystem.OpenAppPackageFileAsync("royals.png");
+			task.Wait();
+			using (var stream = task.Result)
+			{
+				// Copy to MemoryStream to ensure stream is properly buffered for marshal methods
+				using (var memoryStream = new MemoryStream())
+				{
+					stream.CopyTo(memoryStream);
+					memoryStream.Position = 0;
+					image = PlatformImage.FromStream(memoryStream);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"Failed to load image: {ex.Message}");
 		}
 
 		if (image is not null)
