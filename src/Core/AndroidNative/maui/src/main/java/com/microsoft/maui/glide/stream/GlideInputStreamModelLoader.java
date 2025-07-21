@@ -65,4 +65,3 @@ public class GlideInputStreamModelLoader implements ModelLoader<InputStream, Inp
         return true;
     }
 }
-}
