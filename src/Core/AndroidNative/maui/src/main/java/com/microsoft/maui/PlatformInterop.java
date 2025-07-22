@@ -346,35 +346,7 @@ public class PlatformInterop {
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
-    public static void loadImageFromByteArray(ImageView imageView, byte[] byteArray, ImageLoaderCallback callback) {
-        try {
-            // Use BitmapFactory directly with byte array to avoid AndroidMarshalMethod InputStreamAdapter issues
-            android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-            if (bitmap != null) {
-                android.graphics.drawable.BitmapDrawable drawable = new android.graphics.drawable.BitmapDrawable(imageView.getContext().getResources(), bitmap);
-                callback.onComplete(true, drawable, null);
-            } else {
-                callback.onComplete(false, null, null);
-            }
-        } catch (Exception e) {
-            callback.onComplete(false, null, null);
-        }
-    }
 
-    public static void loadImageFromByteArray(Context context, byte[] byteArray, ImageLoaderCallback callback) {
-        try {
-            // Use BitmapFactory directly with byte array to avoid AndroidMarshalMethod InputStreamAdapter issues
-            android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-            if (bitmap != null) {
-                android.graphics.drawable.BitmapDrawable drawable = new android.graphics.drawable.BitmapDrawable(context.getResources(), bitmap);
-                callback.onComplete(true, drawable, null);
-            } else {
-                callback.onComplete(false, null, null);
-            }
-        } catch (Exception e) {
-            callback.onComplete(false, null, null);
-        }
-    }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         try {

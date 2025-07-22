@@ -25,15 +25,7 @@ namespace Microsoft.Maui
 
 					var callback = new ImageLoaderCallback();
 
-					// Convert stream to byte array to avoid AndroidMarshalMethod InputStreamAdapter issues in release builds
-					byte[] buffer;
-					using (var memoryStream = new MemoryStream())
-					{
-						await stream.CopyToAsync(memoryStream, cancellationToken);
-						buffer = memoryStream.ToArray();
-					}
-
-					PlatformInterop.LoadImageFromByteArray(imageView, buffer, callback);
+					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
 
 					var result = await callback.Result;
 
@@ -70,15 +62,7 @@ namespace Microsoft.Maui
 
 					var drawableCallback = new ImageLoaderResultCallback();
 
-					// Convert stream to byte array to avoid AndroidMarshalMethod InputStreamAdapter issues in release builds
-					byte[] buffer;
-					using (var memoryStream = new MemoryStream())
-					{
-						await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-						buffer = memoryStream.ToArray();
-					}
-
-					PlatformInterop.LoadImageFromByteArray(context, buffer, drawableCallback);
+					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
 
 					var result = await drawableCallback.Result.ConfigureAwait(false);
 
