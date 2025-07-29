@@ -24,10 +24,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (ItemCount == 0)
 			{
-				count += 2;
 				startIndex = 0;
 			}
-			return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex, count);
+			if (!Loop)
+			{
+				return base.CreateIndexesFrom(startIndex, count);
+			}
+
+			// When Loop=true, we add 2 extra items to the index paths to create a "fake loop" effect.
+			// This works by adding one copy of the last item at the beginning of the collection
+			// and one copy of the first item at the end, enabling smooth circular navigation.
+			return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex, count + 2);
 		}
 
 		private protected override bool ShouldReload(NotifyCollectionChangedEventArgs args)
