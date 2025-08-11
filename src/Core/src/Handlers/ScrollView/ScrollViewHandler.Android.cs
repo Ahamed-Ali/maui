@@ -59,14 +59,12 @@ namespace Microsoft.Maui.Handlers
 					adjust the MeasureSpec accordingly. If the ScrollView is not set to Fill, we can just leave the spec
 					alone and the ScrollView will size to its content as usual. */
 
-				var orientation = virtualView.Orientation;
-
-				if (!double.IsInfinity(heightConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical))
+				if (!double.IsInfinity(heightConstraint))
 				{
 					heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
 				}
 
-				if (!double.IsInfinity(widthConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal))
+				if (!double.IsInfinity(widthConstraint))
 				{
 					widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
 				}
