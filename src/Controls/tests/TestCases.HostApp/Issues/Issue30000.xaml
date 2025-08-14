@@ -8,7 +8,7 @@
         <VerticalStackLayout Padding="10" Spacing="10">
             
             <Label x:Name="StatusLabel" 
-                   Text="Test SIGSEGV crash prevention on Android 5.1.1 with CollectionView and Switch controls"
+                   Text="Test SIGSEGV crash prevention on Android 5.1.1 with CollectionView, RecyclerView, and ColorFilter operations"
                    FontSize="16" 
                    HorizontalOptions="Center"
                    VerticalTextAlignment="Center"/>

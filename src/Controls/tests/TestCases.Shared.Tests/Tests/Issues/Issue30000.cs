@@ -10,7 +10,7 @@ public class Issue30000 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "SIGSEGV on Android 5.1.1 with CollectionView and Switch controls";
+	public override string Issue => "SIGSEGV on Android 5.1.1 with CollectionView, RecyclerView and ColorFilter operations";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -20,13 +20,14 @@ public class Issue30000 : _IssuesUITest
 		App.WaitForElement("StartTestButton");
 		
 		// Start the rapid update test that would previously crash on Android 5.1.1
+		// This test exercises both ColorFilter operations AND RecyclerView memory management
 		App.Tap("StartTestButton");
 		
 		// Wait for the test to run - if it crashes, the test will fail
 		App.WaitForElement("StopTestButton");
 		
 		// Let the rapid updates run for a few seconds to trigger the crash scenario
-		// On Android 5.1.1, this would previously cause SIGSEGV in libskia.so
+		// On Android 5.1.1, this would previously cause SIGSEGV in RecyclerView and ColorFilter operations
 		System.Threading.Thread.Sleep(5000);
 		
 		// Verify the app is still responsive by checking we can interact with switches

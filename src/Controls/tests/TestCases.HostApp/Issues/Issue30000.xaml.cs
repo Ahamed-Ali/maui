@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 30000, "SIGSEGV on Android 5.1.1 with CollectionView and Switch controls", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 30000, "SIGSEGV on Android 5.1.1 with CollectionView, RecyclerView and ColorFilter operations", PlatformAffected.Android)]
 public partial class Issue30000 : ContentPage
 {
 	private readonly Issue30000ViewModel _viewModel;
@@ -24,9 +24,10 @@ public partial class Issue30000 : ContentPage
 	{
 		StartTestButton.IsEnabled = false;
 		StopTestButton.IsEnabled = true;
-		StatusLabel.Text = "Rapid updates running - Testing ColorFilter crash prevention";
+		StatusLabel.Text = "Rapid updates running - Testing RecyclerView and ColorFilter crash prevention";
 
 		// Start rapid updates that would previously cause SIGSEGV on Android 5.1.1
+		// This test reproduces crashes from both ColorFilter operations AND RecyclerView memory management
 		_updateTimer = new System.Timers.Timer(100); // Very rapid updates
 		_updateTimer.Elapsed += OnTimerElapsed;
 		_updateTimer.Start();
@@ -49,6 +50,7 @@ public partial class Issue30000 : ContentPage
 		MainThread.BeginInvokeOnMainThread(() =>
 		{
 			// Rapidly update switch states and colors - this triggers ColorFilter operations
+			// and RecyclerView adapter notifications that cause memory race conditions
 			var randomIndex = _random.Next(_viewModel.Items.Count);
 			var item = _viewModel.Items[randomIndex];
 			
@@ -57,7 +59,8 @@ public partial class Issue30000 : ContentPage
 			item.Switch2 = !item.Switch2; 
 			item.Switch3 = !item.Switch3;
 
-			// Also update the collection to trigger CollectionView updates
+			// Also update the collection to trigger CollectionView/RecyclerView updates
+			// This triggers SafeClearRecycledViewPool and SafeSwapAdapter calls
 			if (_random.Next(10) == 0) // Occasionally shuffle
 			{
 				var temp = _viewModel.Items[0];
