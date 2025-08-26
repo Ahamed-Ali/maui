@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex, count);
 			}
 			// Adjust startIndex by +1 to force iOS UICollectionView cache invalidation during navigation scenarios
-			// where ItemsSource updates don't trigger GetCell calls. The loop manager in GetCell will correct 
+			// where ItemsSource updates don't trigger GetCell calls. The loop manager AdjustedIndex method in GetCell will correct
 			// these offset indices back to proper data source positions.
 			return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex + 1, count);
 		}
