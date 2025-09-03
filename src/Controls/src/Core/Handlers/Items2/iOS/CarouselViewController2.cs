@@ -401,7 +401,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
-
+				if (!LayoutFactory2.IsIndexPathValid(goToIndexPath, CollectionView))
+				{
+					return;
+				}
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
 		}
@@ -544,6 +547,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 					var uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 
+					if (!LayoutFactory2.IsIndexPathValid(projectedPosition, CollectionView))
+					{
+						return;
+					}
 					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
 
 					//Set the position on VirtualView to update the CurrentItem also
