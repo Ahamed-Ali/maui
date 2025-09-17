@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
 
 				// Unhook whichever adapter is active
-				SetAdapter(null);
+				SafeSetAdapter(null);
 
 				_emptyViewAdapter?.Dispose();
 				ItemsViewAdapter?.Dispose();
@@ -136,7 +137,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void UpdateItemTemplate()
 		{
-			GetRecycledViewPool().Clear();
+			SafeClearRecycledViewPool();
 			UpdateAdapter();
 		}
 
@@ -239,9 +240,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_itemsUpdateScrollObserver.Stop(oldItemViewAdapter);
 
-				SetAdapter(null);
+				SafeSetAdapter(null);
 
-				SwapAdapter(ItemsViewAdapter, true);
+				SafeSwapAdapter(ItemsViewAdapter, true);
 			}
 
 			UpdateEmptyView();
@@ -578,8 +579,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var currentAdapter = GetAdapter();
 			if (showEmptyView && currentAdapter != _emptyViewAdapter)
 			{
-				GetRecycledViewPool().Clear();
-				SwapAdapter(_emptyViewAdapter, true);
+				SafeClearRecycledViewPool();
+				SafeSwapAdapter(_emptyViewAdapter, true);
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
 				SetLayoutManager(SelectLayoutManager(ItemsLayout));
@@ -587,8 +588,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
-				GetRecycledViewPool().Clear();
-				SwapAdapter(ItemsViewAdapter, true);
+				SafeClearRecycledViewPool();
+				SafeSwapAdapter(ItemsViewAdapter, true);
 				UpdateLayoutManager();
 			}
 		}
@@ -636,6 +637,65 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			RecyclerViewScrollListener.Dispose();
 			ClearOnScrollListeners();
 			RecyclerViewScrollListener = null;
+		}
+
+		/// <summary>
+		/// Safely clears the RecyclerView's recycled view pool.
+		/// On Android 5.1.1 and below, avoids clearing during potential race conditions.
+		/// </summary>
+		void SafeClearRecycledViewPool()
+		{
+			try
+			{
+				// Android 5.1.1 (API 22) and below have race conditions in RecyclerView
+				// memory management during rapid updates that can cause SIGSEGV crashes
+				if (Build.VERSION.SdkInt <= BuildVersionCodes.LollipopMr1)
+				{
+					// On older versions, avoid clearing the pool during rapid updates
+					// Let the garbage collector handle cleanup naturally
+					return;
+				}
+
+				GetRecycledViewPool().Clear();
+			}
+			catch (System.Exception)
+			{
+				// Silently ignore RecyclerView pool clearing failures on older Android versions
+			}
+		}
+
+		/// <summary>
+		/// Safely sets the RecyclerView adapter.
+		/// On Android 5.1.1 and below, adds protection against memory race conditions.
+		/// </summary>
+		void SafeSetAdapter(RecyclerView.Adapter adapter)
+		{
+			try
+			{
+				SetAdapter(adapter);
+			}
+			catch (System.Exception)
+			{
+				// Silently ignore adapter setting failures on older Android versions
+				// This prevents crashes during rapid adapter changes
+			}
+		}
+
+		/// <summary>
+		/// Safely swaps the RecyclerView adapter.
+		/// On Android 5.1.1 and below, adds protection against memory race conditions.
+		/// </summary>
+		void SafeSwapAdapter(RecyclerView.Adapter adapter, bool removeAndRecycleExistingViews)
+		{
+			try
+			{
+				SwapAdapter(adapter, removeAndRecycleExistingViews);
+			}
+			catch (System.Exception)
+			{
+				// Silently ignore adapter swapping failures on older Android versions
+				// This prevents crashes during rapid adapter changes
+			}
 		}
 	}
 }

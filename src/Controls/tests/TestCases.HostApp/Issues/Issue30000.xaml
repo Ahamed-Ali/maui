@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue30000"
+             Title="Issue 30000">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="10" Spacing="10">
+            
+            <Label x:Name="StatusLabel" 
+                   Text="Test SIGSEGV crash prevention on Android 5.1.1 with CollectionView, RecyclerView, and ColorFilter operations"
+                   FontSize="16" 
+                   HorizontalOptions="Center"
+                   VerticalTextAlignment="Center"/>
+            
+            <Button x:Name="StartTestButton" 
+                    Text="Start Rapid Update Test" 
+                    Clicked="OnStartTestClicked"
+                    AutomationId="StartTestButton"/>
+            
+            <Button x:Name="StopTestButton" 
+                    Text="Stop Test" 
+                    Clicked="OnStopTestClicked"
+                    IsEnabled="False"
+                    AutomationId="StopTestButton"/>
+
+            <CollectionView x:Name="TestCollectionView" 
+                            ItemsSource="{Binding Items}"
+                            SelectionMode="Single"
+                            AutomationId="TestCollectionView">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="5" Padding="10" BackgroundColor="LightGray">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" 
+                                   Text="{Binding Name}" 
+                                   FontSize="16"
+                                   VerticalOptions="Center"/>
+                            
+                            <Switch Grid.Column="1" 
+                                    IsToggled="{Binding Switch1}" 
+                                    TrackColor="Red"
+                                    ThumbColor="Blue"
+                                    AutomationId="Switch1"/>
+                            
+                            <Switch Grid.Column="2" 
+                                    IsToggled="{Binding Switch2}"
+                                    TrackColor="Green" 
+                                    ThumbColor="Orange"
+                                    AutomationId="Switch2"/>
+                            
+                            <Switch Grid.Column="3" 
+                                    IsToggled="{Binding Switch3}"
+                                    TrackColor="Purple"
+                                    ThumbColor="Yellow"
+                                    AutomationId="Switch3"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
