@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
@@ -46,9 +47,37 @@ namespace Microsoft.Maui.Handlers
 				return Size.Zero;
 			}
 
+			var effectiveWidthConstraint = widthConstraint;
+			var effectiveHeightConstraint = heightConstraint;
+
+			// When an inset panel is present (for handling padding/margins), we need to account for the space that
+			// the inset panel will consume when measuring the ScrollView to prevent unnecessary scrollbars.
+			// The inset panel handles both padding and margins, so we need to subtract both from the available space.
+			var insetPanel = FindInsetPanel(this);
+			if (insetPanel != null && virtualView.PresentedContent != null)
+			{
+				var padding = virtualView.Padding;
+				var margin = virtualView.PresentedContent.Margin;
+
+				// Calculate the total space consumed by padding and margins
+				var totalHorizontalInset = padding.HorizontalThickness + margin.HorizontalThickness;
+				var totalVerticalInset = padding.VerticalThickness + margin.VerticalThickness;
+
+				// Only adjust finite constraints, preserve infinity
+				if (!double.IsInfinity(widthConstraint) && totalHorizontalInset > 0)
+				{
+					effectiveWidthConstraint = Math.Max(0, widthConstraint - totalHorizontalInset);
+				}
+
+				if (!double.IsInfinity(heightConstraint) && totalVerticalInset > 0)
+				{
+					effectiveHeightConstraint = Math.Max(0, heightConstraint - totalVerticalInset);
+				}
+			}
+
 			// Create a spec to handle the native measure
-			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+			var widthSpec = Context.CreateMeasureSpec(effectiveWidthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var heightSpec = Context.CreateMeasureSpec(effectiveHeightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
 			if (platformView.FillViewport)
 			{
@@ -61,12 +90,12 @@ namespace Microsoft.Maui.Handlers
 
 				var orientation = virtualView.Orientation;
 
-				if (!double.IsInfinity(heightConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical))
+				if (!double.IsInfinity(effectiveHeightConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical))
 				{
 					heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
 				}
 
-				if (!double.IsInfinity(widthConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal))
+				if (!double.IsInfinity(effectiveWidthConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal))
 				{
 					widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
 				}
