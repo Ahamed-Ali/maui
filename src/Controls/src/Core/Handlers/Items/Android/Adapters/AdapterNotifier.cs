@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using Android.OS;
 using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public void NotifyItemChanged(IItemsViewSource source, int startIndex)
 		{
 			if (IsValidAdapter())
-				_adapter.NotifyItemChanged(startIndex);
+				SafeNotifyItemChanged(startIndex);
 		}
 
 		public void NotifyItemInserted(IItemsViewSource source, int startIndex)
@@ -76,6 +77,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 
 			return true;
+		}
+
+		/// <summary>
+		/// Safely notifies the adapter that an item has changed.
+		/// On Android 5.1.1 and below, adds protection against race conditions with individual item updates
+		/// during rapid collection operations.
+		/// </summary>
+		void SafeNotifyItemChanged(int index)
+		{
+			try
+			{
+				// Android 5.1.1 (API 22) and below have race conditions when individual item
+				// property changes happen simultaneously with collection structure changes
+				if (Build.VERSION.SdkInt <= BuildVersionCodes.LollipopMr1)
+				{
+					// On older versions, use the safer but less efficient NotifyDataSetChanged
+					// when individual items are being updated rapidly to avoid SIGSEGV crashes
+					_adapter.NotifyDataSetChanged();
+				}
+				else
+				{
+					_adapter.NotifyItemChanged(index);
+				}
+			}
+			catch (System.Exception)
+			{
+				// Silently ignore individual item notification failures on older Android versions
+			}
 		}
 	}
 }
