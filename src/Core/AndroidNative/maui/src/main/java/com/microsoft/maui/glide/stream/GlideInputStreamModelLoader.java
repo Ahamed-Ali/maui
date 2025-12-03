@@ -13,6 +13,8 @@ import com.bumptech.glide.signature.ObjectKey;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.microsoft.maui.StreamUtils;
+
 public class GlideInputStreamModelLoader implements ModelLoader<InputStream, InputStream> {
     @Nullable
     @Override
@@ -20,7 +22,15 @@ public class GlideInputStreamModelLoader implements ModelLoader<InputStream, Inp
         return new LoadData<InputStream>(new ObjectKey(inputStream), new DataFetcher<InputStream>() {
             @Override
             public void loadData(@NonNull Priority priority, @NonNull DataCallback<? super InputStream> callback) {
-                callback.onDataReady(inputStream);
+                // Check if the inputStream is an InputStreamAdapter from mono.android.runtime
+                // In release builds with AndroidMarshalMethod enabled, .NET streams are wrapped
+                // in InputStreamAdapter objects that Glide cannot properly decode
+                try {
+                    InputStream processedStream = StreamUtils.ensureCompatibleStream(inputStream);
+                    callback.onDataReady(processedStream);
+                } catch (IOException e) {
+                    callback.onLoadFailed(e);
+                }
             }
 
             @Override
