@@ -14,6 +14,13 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 internal class KnownMarkups
 {
+	public static bool ProvideValueForNullExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	{
+		returnType = context.Compilation.ObjectType;
+		value = "(object)null!";
+		return true;
+	}
+
 	public static bool ProvideValueForStaticExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.ObjectType;
@@ -122,44 +129,105 @@ internal class KnownMarkups
 		return false;
 	}
 
-	public static bool ProvideValueForSetter(ElementNode node, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForRelativeSourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.RelativeBindingSource")!;
 
-		if (!node.Properties.TryGetValue(new XmlName("", "Value"), out INode? valueNode) &&
-			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
-			node.CollectionItems.Count == 1)
-			valueNode = node.CollectionItems[0];
+		// Get the Mode property value
+		string? modeStr = null;
+		if (markupNode.Properties.TryGetValue(new XmlName("", "Mode"), out INode? modeNode)
+			|| markupNode.Properties.TryGetValue(new XmlName(null, "Mode"), out modeNode))
+		{
+			modeStr = (modeNode as ValueNode)?.Value as string;
+		}
+		else if (markupNode.CollectionItems.Count == 1)
+		{
+			// ContentProperty is Mode
+			modeStr = (markupNode.CollectionItems[0] as ValueNode)?.Value as string;
+		}
 
-		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
-		var bpRef = bpNode.GetBindableProperty(context);
+		// Get the AncestorType property (which is an x:Type extension)
+		ITypeSymbol? ancestorTypeSymbol = null;
+		if (markupNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out INode? ancestorTypeNode)
+			|| markupNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
+		{
+			if (ancestorTypeNode is ElementNode typeExtNode && context.Types.TryGetValue(typeExtNode, out ancestorTypeSymbol))
+			{
+				// Type was already resolved by ProvideValueForTypeExtension
+			}
+			else if (ancestorTypeNode is ValueNode vnType)
+			{
+				// Try to parse as a type name
+				var typeName = vnType.Value as string;
+				if (!IsNullOrEmpty(typeName))
+				{
+					XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
+					xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var resolvedType);
+					ancestorTypeSymbol = resolvedType;
+				}
+			}
+		}
 
-		string targetsetter;
-		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
-			targetsetter = $"TargetName = \"{((ValueNode)targetNode).Value}\", ";
+		// Get the AncestorLevel property (default is 1)
+		int ancestorLevel = 1;
+		if (markupNode.Properties.TryGetValue(new XmlName("", "AncestorLevel"), out INode? ancestorLevelNode)
+			|| markupNode.Properties.TryGetValue(new XmlName(null, "AncestorLevel"), out ancestorLevelNode))
+		{
+			if (ancestorLevelNode is ValueNode vnLevel && int.TryParse(vnLevel.Value as string, out int level))
+			{
+				ancestorLevel = level;
+			}
+		}
+
+		// Determine the actual mode
+		if (ancestorTypeSymbol is not null)
+		{
+			string actualMode;
+			if (modeStr == "FindAncestor" || modeStr == "FindAncestorBindingContext")
+			{
+				actualMode = $"global::Microsoft.Maui.Controls.RelativeBindingSourceMode.{modeStr}";
+			}
+			else
+			{
+				// When Mode is not explicitly FindAncestor or FindAncestorBindingContext,
+				// determine based on whether the type is an Element
+				var elementType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element");
+				if (elementType is not null && context.Compilation.HasImplicitConversion(ancestorTypeSymbol, elementType))
+				{
+					actualMode = "global::Microsoft.Maui.Controls.RelativeBindingSourceMode.FindAncestor";
+				}
+				else
+				{
+					actualMode = "global::Microsoft.Maui.Controls.RelativeBindingSourceMode.FindAncestorBindingContext";
+				}
+			}
+
+			value = $"new global::Microsoft.Maui.Controls.RelativeBindingSource({actualMode}, typeof({ancestorTypeSymbol.ToFQDisplayString()}), {ancestorLevel})";
+			return true;
+		}
+		else if (modeStr == "Self")
+		{
+			value = "global::Microsoft.Maui.Controls.RelativeBindingSource.Self";
+			return true;
+		}
+		else if (modeStr == "TemplatedParent")
+		{
+			value = "global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent";
+			return true;
+		}
+		else if (modeStr == "FindAncestor" || modeStr == "FindAncestorBindingContext")
+		{
+			// These modes require AncestorType
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"RelativeSource Mode '{modeStr}' requires AncestorType"));
+			value = "default";
+			return false;
+		}
 		else
-			targetsetter = "";
-
-		if (valueNode is ValueNode vn)
 		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, writer, context)}}}";
-			return true;
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Invalid RelativeSource Mode '{modeStr ?? "(none)"}'"));
+			value = "default";
+			return false;
 		}
-		else if (getNodeValue != null)
-		{
-			var lvalue = getNodeValue(valueNode, bpRef.Type);
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
-			return true;
-		}
-		else if (context.Variables.TryGetValue(valueNode, out var variable))
-		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {variable.ValueAccessor}}}";
-			return true;
-		}
-
-		value = string.Empty;
-		//FIXME context.ReportDiagnostic
-		return false;
 	}
 
 	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
@@ -214,7 +282,7 @@ internal class KnownMarkups
 		else // sourceNode != null
 		{
 			var source = (string)(sourceNode as ValueNode)!.Value;
-			var uri = $"new global::System.Uri(\"{source}\", global::System.UriKind.Relative)";
+			var uri = $"new global::System.Uri(@\"{source}\", global::System.UriKind.Relative)";
 			var rootTargetPath = $"global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({context.RootType.ToFQDisplayString()}))";
 
 			var resourcePath = $"global::Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.GetResourcePath({uri}, {rootTargetPath})";
@@ -330,10 +398,17 @@ internal class KnownMarkups
 
 		static string GetBindingPath(ElementNode node)
 		{
-			if (node.Properties.TryGetValue(new XmlName("", "Path"), out var pathNode)
+			// Try to find Path property - check both null and empty string namespaces
+			// as the namespace can vary depending on context (e.g., when x:DataType is present)
+			if (node.Properties.TryGetValue(new XmlName(null, "Path"), out var pathNode)
 				&& pathNode is ValueNode { Value: string pathValue })
 			{
 				return pathValue;
+			}
+			else if (node.Properties.TryGetValue(new XmlName("", "Path"), out pathNode)
+				&& pathNode is ValueNode { Value: string pathValue2 })
+			{
+				return pathValue2;
 			}
 			else if (node.CollectionItems.Count == 1
 				&& node.CollectionItems[0] is ValueNode { Value: string singleCollectionItemValue })
@@ -513,6 +588,50 @@ internal class KnownMarkups
 				&& propertyName.NamespaceURI == ""
 				&& propertyName.LocalName == "BindingContext";
 		}
+	}
+
+	internal static bool ProvideValueForDataTemplateExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.DataTemplate")!;
+
+		if (!markupNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
+			&& !markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
+			&& markupNode.CollectionItems.Count == 1)
+			typeNameNode = markupNode.CollectionItems[0];
+
+		if (typeNameNode is not ValueNode vn)
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid DataTemplate"));
+			value = "default";
+			return false;
+		}
+
+		var typeName = vn.Value as string;
+		if (IsNullOrEmpty(typeName))
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid DataTemplate"));
+			value = "default";
+			return false;
+		}
+
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
+		if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
+		{
+			context.Types[markupNode] = typeSymbol!;
+			value = $"new global::Microsoft.Maui.Controls.DataTemplate(typeof({typeSymbol!.ToFQDisplayString()}))";
+			return true;
+		}
+
+		//fallback to guessing, if it's a clr-namespace
+		if (xmlType.NamespaceUri.GetClrNamespace() is var ns && ns is not null)
+		{
+			value = $"new global::Microsoft.Maui.Controls.DataTemplate(typeof(global::{ns}.{xmlType.Name}))";
+			return true;
+		}
+
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, null, $"{typeName}"));
+		value = "default";
+		return false;
 	}
 
 	internal static bool ProvideValueForReferenceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
@@ -719,6 +838,13 @@ internal class KnownMarkups
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
+		}
+
+		if (variable is ILocalValue localVar && !localVar.Type.Equals(context.Compilation.GetTypeByMetadataName("System.String")!, SymbolEqualityComparer.Default))
+		{
+			returnType = localVar.Type;
+			value = localVar.ValueAccessor;
+			return true;
 		}
 
 		//if the resource is a string, try to convert it

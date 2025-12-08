@@ -80,10 +80,10 @@ static class NodeSGExtensions
 			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Shape"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 		};
 
-	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownValueProviders(SourceGenContext context)
+	public static Dictionary<ITypeSymbol, IKnownMarkupValueProvider> GetKnownValueProviders(SourceGenContext context)
 		=> context.knownSGValueProviders ??= new(SymbolEqualityComparer.Default)
 	{
-		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new SetterValueProvider()},
 	};
 
 
@@ -92,10 +92,13 @@ static class NodeSGExtensions
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownEarlyMarkupExtensions(SourceGenContext context)
 		=> context.knownSGEarlyMarkupExtensions ??= new(SymbolEqualityComparer.Default)
 	{
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.NullExtension")!, KnownMarkups.ProvideValueForNullExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DataTemplateExtension")!, KnownMarkups.ProvideValueForDataTemplateExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RelativeSourceExtension")!, KnownMarkups.ProvideValueForRelativeSourceExtension},
 	};
 
 	// These markup extensions can only provide values late once the properties have their final values
@@ -446,7 +449,7 @@ static class NodeSGExtensions
 				reportDiagnostic();
 		}
 		if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Uri")!, SymbolEqualityComparer.Default))
-			return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
+			return $"new global::System.Uri(@\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
 
 		//default
 		return SymbolDisplay.FormatLiteral(valueString, true);
@@ -540,8 +543,8 @@ static class NodeSGExtensions
 			return true;
 		}
 
-		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
-			&& provideValue.Invoke(node, writer, context, getNodeValue, out returnType0, out value))
+		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
+			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
