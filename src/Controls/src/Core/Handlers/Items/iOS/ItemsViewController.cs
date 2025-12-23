@@ -484,6 +484,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var bindingContext = ItemsSource[indexPath];
 
+			// If bindingContext is null (can happen during collection updates), 
+			// we can't meaningfully update the cell, so return early to avoid issues
+			if (bindingContext is null)
+			{
+				return;
+			}
+
 			// If we've already created a cell for this index path (for measurement), re-use the content
 			if (_measurementCells != null && _measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
 			{
@@ -493,7 +500,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				cell.Bind(ItemsView.ItemTemplate, ItemsSource[indexPath], ItemsView);
+				cell.Bind(ItemsView.ItemTemplate, bindingContext, ItemsView);
 			}
 
 			cell.LayoutAttributesChanged += CellLayoutAttributesChanged;
@@ -883,13 +890,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return cell;
 			}
 
+			// Check if bindingContext is null before creating measurement cell
+			var bindingContext = ItemsSource[indexPath];
+			if (bindingContext is null)
+			{
+				// Return a basic templated cell without binding if bindingContext is null
+				return CreateAppropriateCellForLayout();
+			}
+
 			TemplatedCell templatedCell = CreateAppropriateCellForLayout();
 
 			UpdateTemplatedCell(templatedCell, indexPath);
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
 			if (_measurementCells != null)
-				_measurementCells[ItemsSource[indexPath]] = templatedCell;
+			{
+				_measurementCells[bindingContext] = templatedCell;
+			}
 
 			return templatedCell;
 		}
