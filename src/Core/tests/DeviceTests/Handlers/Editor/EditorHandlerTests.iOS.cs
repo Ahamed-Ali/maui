@@ -348,6 +348,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(1, completedCount);
 		}
+
+		[Fact(DisplayName = "Editor NeedsContainer When Inside Border")]
+		public async Task EditorNeedsContainerWhenInsideBorder()
+		{
+			var border = new BorderStub();
+			var editor = new EditorStub { Text = "Test Editor" };
+			border.Content = editor;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var editorHandler = CreateHandler<EditorHandler>(editor);
+				
+				// Verify that NeedsContainer returns true when Editor is inside Border
+				Assert.True(editorHandler.NeedsContainer);
+				
+				// Verify the platform view exists
+				var platformView = editorHandler.PlatformView;
+				Assert.NotNull(platformView);
+				Assert.IsType<MauiTextView>(platformView);
+			});
+		}
 #endif
 	}
 }

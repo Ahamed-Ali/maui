@@ -149,7 +149,12 @@ namespace Microsoft.Maui.Platform
 					mauiCALayer.SetBorderLineCap(border.StrokeLineCap);
 				}
 
-				mauiCALayer.SetBorderShape(border?.Shape);
+				// Check if this content is wrapped by a WrapperView for clipping
+				// If so, disable global clipping to prevent conflicts
+				bool isWrappedForClipping = platformView.Superview is WrapperView wrapper 
+					&& wrapper.Clip != null;
+
+				mauiCALayer.SetBorderShape(border?.Shape, shouldClipContent: !isWrappedForClipping);
 			}
 
 			if (platformView is ContentView contentView)
