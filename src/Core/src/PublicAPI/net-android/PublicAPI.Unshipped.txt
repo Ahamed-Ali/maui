@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Platform.HorizontalScrollViewExtensions
+static Microsoft.Maui.Platform.HorizontalScrollViewExtensions.PreventFocusDuringScroll(this Android.Widget.HorizontalScrollView! horizontalScrollView) -> void
