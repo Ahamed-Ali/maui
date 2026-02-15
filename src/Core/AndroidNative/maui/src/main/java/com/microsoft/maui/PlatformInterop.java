@@ -346,11 +346,19 @@ public class PlatformInterop {
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
+
+
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
-        RequestBuilder<Drawable> builder = Glide
-            .with(imageView)
-            .load(inputStream);
-        loadInto(builder, imageView, false, callback, inputStream);
+        try {
+            // Ensure stream compatibility with AndroidMarshalMethod in release builds
+            InputStream compatibleStream = com.microsoft.maui.StreamUtils.ensureCompatibleStream(inputStream);
+            RequestBuilder<Drawable> builder = Glide
+                .with(imageView)
+                .load(compatibleStream);
+            loadInto(builder, imageView, false, callback, compatibleStream);
+        } catch (Exception e) {
+            callback.onComplete(false, null, null);
+        }
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -382,10 +390,16 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
-        RequestBuilder<Drawable> builder = Glide
-            .with(context)
-            .load(inputStream);
-        load(builder, context, false, callback, inputStream);
+        try {
+            // Ensure stream compatibility with AndroidMarshalMethod in release builds
+            InputStream compatibleStream = com.microsoft.maui.StreamUtils.ensureCompatibleStream(inputStream);
+            RequestBuilder<Drawable> builder = Glide
+                .with(context)
+                .load(compatibleStream);
+            load(builder, context, false, callback, compatibleStream);
+        } catch (Exception e) {
+            callback.onComplete(false, null, null);
+        }
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {

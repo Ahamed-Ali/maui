@@ -23,12 +23,27 @@ namespace Microsoft.Maui
 				try
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken);
+					// Convert stream to byte array to avoid AndroidMarshalMethod InputStreamAdapter issues in release builds
+					byte[] buffer;
+					int length;
+					using (var memoryStream = new MemoryStream())
+					{
+						await stream.CopyToAsync(memoryStream, cancellationToken);
+						buffer = memoryStream.GetBuffer();
+						length = (int)memoryStream.Length;
+					}
 
-					var callback = new ImageLoaderCallback();
+					// Decode the byte array into a Bitmap
+					var bitmap = global::Android.Graphics.BitmapFactory.DecodeByteArray(buffer, 0, length);
 
-					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
+					// Set the bitmap to the ImageView
+					imageView.SetImageBitmap(bitmap);
 
-					var result = await callback.Result;
+					// Convert Bitmap to Drawable
+					var drawable = new Android.Graphics.Drawables.BitmapDrawable(imageView.Resources, bitmap);
+
+					// Create a result object
+					var result = new ImageSourceServiceResult(drawable);
 
 					stream?.Dispose();
 
@@ -61,11 +76,24 @@ namespace Microsoft.Maui
 				{
 					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 
-					var drawableCallback = new ImageLoaderResultCallback();
+					// Convert stream to byte array to avoid AndroidMarshalMethod InputStreamAdapter issues in release builds
+					byte[] buffer;
+					int length;
+					using (var memoryStream = new MemoryStream())
+					{
+						await stream.CopyToAsync(memoryStream, cancellationToken);
+						buffer = memoryStream.GetBuffer();
+						length = (int)memoryStream.Length;
+					}
 
-					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
+					// Decode the byte array into a Bitmap
+					var bitmap = global::Android.Graphics.BitmapFactory.DecodeByteArray(buffer, 0, length);
 
-					var result = await drawableCallback.Result.ConfigureAwait(false);
+					// Convert Bitmap to Drawable
+					var drawable = new Android.Graphics.Drawables.BitmapDrawable(context.Resources, bitmap);
+
+					// Create a result object
+					var result = new ImageSourceServiceResult(drawable);
 
 					stream?.Dispose();
 
