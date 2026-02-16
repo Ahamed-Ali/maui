@@ -45,9 +45,21 @@ public class Issue21886 : ContentPage
 
 	async Task<IImage> LoadImageAsync()
 	{
-		var assembly = GetType().GetTypeInfo().Assembly;
-		using var stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.royals.png");
-		return await Task.FromResult(PlatformImage.FromStream(stream));
+		try
+		{
+			// Use FileSystem.OpenAppPackageFileAsync for MauiAsset approach
+			using var stream = await FileSystem.OpenAppPackageFileAsync("royals.png");
+			// Copy to MemoryStream to ensure stream is properly buffered for marshal methods
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream);
+			memoryStream.Position = 0;
+			return PlatformImage.FromStream(memoryStream);
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"Failed to load image: {ex.Message}");
+			return null;
+		}
 	}
 
 	async void OnResize(object sender, EventArgs e)
