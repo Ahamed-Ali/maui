@@ -109,6 +109,20 @@ namespace Microsoft.Maui
 				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
 				sizeThatFits.Height == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Height);
 
+			// On Mac Catalyst, SizeThatFits can return sizes larger than the provided constraints
+			// This causes layout issues, so we need to clamp the results to the constraints
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(11))
+			{
+				if (!double.IsInfinity(size.Width) && !double.IsInfinity(widthConstraint) && size.Width > widthConstraint)
+				{
+					size = new Size(widthConstraint, size.Height);
+				}
+				if (!double.IsInfinity(size.Height) && !double.IsInfinity(heightConstraint) && size.Height > heightConstraint)
+				{
+					size = new Size(size.Width, heightConstraint);
+				}
+			}
+
 			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
 				platformView.SizeToFit();

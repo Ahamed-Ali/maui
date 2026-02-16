@@ -28,11 +28,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
-				ItemSize = new CGSize(width, size.Height);
+				// Fix for Mac Catalyst: Use consistent height calculation that accounts for peek area insets
+				var itemHeight = height != 0 ? height : size.Height;
+				ItemSize = new CGSize(width, itemHeight);
 			}
 			else
 			{
-				ItemSize = new CGSize(size.Width, height);
+				// Fix for Mac Catalyst: Use consistent width calculation that accounts for peek area insets  
+				var itemWidth = width != 0 ? width : size.Width;
+				ItemSize = new CGSize(itemWidth, height);
 			}
 		}
 

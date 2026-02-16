@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage  
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  x:Class="Maui.Controls.Sample.Issues.Issue22417Mac"
+  Title="Mac CarouselView Sizing Test">
+  <Grid
+      RowDefinitions="Auto, *, Auto">
+    <Grid.Resources>
+      
+      <DataTemplate x:Key="SampleItemTemplate">
+        <Grid 
+          RowDefinitions="Auto, Auto"
+          BackgroundColor="{Binding Color, Mode=OneWay}">
+          <Label 
+            AutomationId="ItemTitle"
+            TextColor="White"
+            Text="{Binding Title, Mode=OneWay}" 
+            FontAttributes="Bold" />
+          <Label 
+            AutomationId="ItemDescription"
+            Grid.Row="1"
+            TextColor="White"
+            Text="{Binding Description, Mode=OneWay}" />
+        </Grid>
+      </DataTemplate>
+      
+    </Grid.Resources>
+    <Label 
+      AutomationId="WaitForStubControl"
+      Text="Mac CarouselView width sizing test - items should fill available width"/>
+    <CarouselView 
+      x:Name="TestCarouselView"
+      AutomationId="TestCarouselView"
+      Grid.Row="1"
+      ItemTemplate="{StaticResource SampleItemTemplate}"
+      Loop="True"
+      HeightRequest="250"
+      HorizontalOptions="Center"/>
+
+    <StackLayout Grid.Row="2" Orientation="Horizontal">
+      <Button AutomationId="AddItemButton"
+              Text="Add Item"
+              Clicked="OnAddItemClicked" />
+      <Label AutomationId="SizeInfoLabel" 
+             x:Name="SizeInfoLabel"
+             Text="Size: N/A" 
+             VerticalOptions="Center"/>
+    </StackLayout>
+  </Grid>
+</ContentPage>
