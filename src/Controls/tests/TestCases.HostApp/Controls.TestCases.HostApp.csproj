@@ -37,6 +37,13 @@
     <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
+  <!-- Test marshal methods compatibility with BitmapFactory.DecodeStreamAsync approach -->
+  <!-- This tests if using async BitmapFactory methods works better with .NET 10.0 marshal methods -->
+  <!-- Reference: https://github.com/dotnet/core/blob/main/release-notes/10.0/preview/preview1/dotnetmaui.md#enable-marshal-methods-by-default -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <AndroidEnableMarshalMethods>true</AndroidEnableMarshalMethods>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
@@ -70,7 +77,7 @@
     <MauiFont Include="Resources\Fonts\**" />
     <MauiFont Remove="Resources\Fonts\Dokdo-Regular.ttf" />
     <EmbeddedResource Include="Resources\Fonts\Dokdo-Regular.ttf" />
-    <EmbeddedResource Include="Resources\Images\royals.png" />
+    <MauiAsset Include="Resources\Images\royals.png" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
