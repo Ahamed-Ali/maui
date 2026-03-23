@@ -71,6 +71,8 @@ namespace Microsoft.Maui.Controls.Platform
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext)
 		{
+			// Ensure consistent 5-tab limit across all .NET versions
+			maxBottomItems = Math.Min(maxBottomItems, 5);
 			Context context = mauiContext.Context;
 
 			while (items.Count < menu.Size())
@@ -171,6 +173,8 @@ namespace Microsoft.Maui.Controls.Platform
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int maxItemCount)
 		{
+			// Ensure consistent 5-tab limit across all .NET versions
+			maxItemCount = Math.Min(maxItemCount, 5);
 			var context = mauiContext.Context;
 			var bottomSheetDialog = new BottomSheetDialog(context);
 			var bottomSheetLayout = new LinearLayout(context);
